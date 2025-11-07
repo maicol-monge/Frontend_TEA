@@ -16,6 +16,7 @@ import HomeAdmin from "./Admin/HomeAdmin";
 import CrudUsuarios from "./Admin/Usuarios/CrudUsuarios";
 import FormUsuario from "./Admin/Usuarios/FormUsuario";
 import CrudPacientes from "./Admin/Pacientes/CrudPacientes";
+import FormPaciente from "./Admin/Pacientes/FormPaciente";
 import CrudEspecialistas from "./Admin/CrudEspecialistas";
 import CrudAreas from "./Admin/CrudAreas";
 import CrudPreguntas from "./Admin/CrudPreguntas";
@@ -147,6 +148,12 @@ function App() {
           <Route path="/admin/usuarios/editar/:id" element={<FormUsuario />} />
           {/* Pacientes */}
           <Route path="/admin/pacientes" element={<CrudPacientes />} />
+          <Route path="/admin/pacientes/nuevo" element={<FormPaciente />} />
+          <Route
+            path="/admin/pacientes/editar/:id"
+            element={<FormPaciente />}
+          />
+          {/* Especialistas */}
           <Route path="/admin/especialistas" element={<CrudEspecialistas />} />
           <Route path="/admin/areas" element={<CrudAreas />} />
           <Route path="/admin/preguntas" element={<CrudPreguntas />} />

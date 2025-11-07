@@ -4,6 +4,7 @@ import axios from "axios";
 import { apiUrl } from "../../config/apiConfig";
 import NavbarAdmin from "../../components/NavbarAdmin";
 import Footer from "../../components/Footer";
+import Swal from "sweetalert2";
 
 const FormUsuario = () => {
   const { id } = useParams(); // si existe, estamos editando
@@ -104,7 +105,11 @@ const FormUsuario = () => {
     const validTelefono = validateField("telefono", form.telefono);
     const validCorreo = validateField("correo", form.correo);
     if (!validNombres || !validApellidos || !validTelefono || !validCorreo) {
-      alert("Por favor corrija los errores en el formulario antes de enviar.");
+      await Swal.fire({
+        icon: "warning",
+        title: "Validación",
+        text: "Por favor corrija los errores en el formulario antes de enviar.",
+      });
       return;
     }
     try {
@@ -112,17 +117,35 @@ const FormUsuario = () => {
         await axios.put(apiUrl(`/api/admin/usuarios/${id}`), form, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Usuario actualizado correctamente");
+        await Swal.fire({
+          icon: "success",
+          title: "Usuario actualizado",
+          text: "El usuario fue actualizado correctamente",
+          timer: 1800,
+          showConfirmButton: false,
+        });
       } else {
         await axios.post(apiUrl("/api/admin/usuarios"), form, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Usuario creado correctamente");
+        await Swal.fire({
+          icon: "success",
+          title: "Usuario creado",
+          text: "El usuario fue creado correctamente",
+          timer: 1800,
+          showConfirmButton: false,
+        });
       }
       navigate("/admin/usuarios");
     } catch (err) {
       console.error("Error al guardar usuario:", err);
-      alert("Error al guardar usuario");
+      const message =
+        err?.response?.data?.message || "Error al guardar usuario";
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: message,
+      });
     }
   };
 

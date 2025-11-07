@@ -192,6 +192,7 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config/apiConfig";
 import NavbarAdmin from "../../components/NavbarAdmin";
 import Footer from "../../components/Footer";
+import Swal from "sweetalert2";
 
 const CrudUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -227,14 +228,35 @@ const CrudUsuarios = () => {
     return matchesSearch && matchesPrivilegio && matchesEstado;
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("¿Eliminar usuario?")) {
-      axios
-        .delete(apiUrl(`/api/admin/usuarios/${id}`), {
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "¿Eliminar usuario?",
+      text: "Esta acción eliminará el usuario permanentemente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(apiUrl(`/api/admin/usuarios/${id}`), {
           headers: { Authorization: `Bearer ${token}` },
-        })
-        .then(fetchUsuarios)
-        .catch((err) => console.error("Error al eliminar usuario:", err));
+        });
+        await Swal.fire({
+          icon: "success",
+          title: "Eliminado",
+          text: "El usuario fue eliminado correctamente",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        fetchUsuarios();
+      } catch (err) {
+        console.error("Error al eliminar usuario:", err);
+        const message =
+          err?.response?.data?.message || "Error al eliminar usuario";
+        await Swal.fire({ icon: "error", title: "Error", text: message });
+      }
     }
   };
 

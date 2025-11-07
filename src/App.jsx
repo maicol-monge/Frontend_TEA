@@ -15,7 +15,7 @@ import DesactivarCuenta from "./Paciente/DesactivarCuenta";
 import HomeAdmin from "./Admin/HomeAdmin";
 import CrudUsuarios from "./Admin/Usuarios/CrudUsuarios";
 import FormUsuario from "./Admin/Usuarios/FormUsuario";
-import CrudPacientes from "./Admin/CrudPacientes";
+import CrudPacientes from "./Admin/Pacientes/CrudPacientes";
 import CrudEspecialistas from "./Admin/CrudEspecialistas";
 import CrudAreas from "./Admin/CrudAreas";
 import CrudPreguntas from "./Admin/CrudPreguntas";

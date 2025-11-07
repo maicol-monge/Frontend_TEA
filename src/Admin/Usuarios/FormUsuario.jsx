@@ -21,6 +21,44 @@ const FormUsuario = () => {
     imagen: "",
     estado: 1,
   });
+  const [errors, setErrors] = useState({
+    nombres: "",
+    apellidos: "",
+    telefono: "",
+    correo: "",
+  });
+
+  // Validaciones
+  const nameRegex = /^[A-Za-zÀ-ÿ\s]+$/; // letras y espacios, soporta acentos
+  const telefonoRegex = /^\d{4}-\d{4}$/; // 7090-1234
+  const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateField = (name, value) => {
+    let error = "";
+    if (name === "nombres" || name === "apellidos") {
+      if (!value || value.trim() === "") {
+        error = "Este campo es obligatorio";
+      } else if (!nameRegex.test(value.trim())) {
+        error = "Solo se permiten letras y espacios";
+      }
+    }
+    if (name === "telefono") {
+      if (!value || value.trim() === "") {
+        error = "Este campo es obligatorio";
+      } else if (!telefonoRegex.test(value.trim())) {
+        error = "Formato inválido. Ej: 7090-1234";
+      }
+    }
+    if (name === "correo") {
+      if (!value || value.trim() === "") {
+        error = "Este campo es obligatorio";
+      } else if (!correoRegex.test(value.trim())) {
+        error = "Correo con formato inválido";
+      }
+    }
+    setErrors((prev) => ({ ...prev, [name]: error }));
+    return error === "";
+  };
 
   useEffect(() => {
     if (id) {
@@ -33,13 +71,42 @@ const FormUsuario = () => {
           if (usuario) setForm({ ...usuario, contrasena: "" });
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // Si es telefono, formatear en tiempo real: solo dígitos, máximo 8, y agregar guion después de 4
+    if (name === "telefono") {
+      const digits = value.replace(/\D/g, "").slice(0, 8); // solo números, máximo 8
+      const formatted =
+        digits.length > 4 ? `${digits.slice(0, 4)}-${digits.slice(4)}` : digits;
+      setForm({ ...form, telefono: formatted });
+      validateField("telefono", formatted);
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
+    // validar en tiempo real para los campos relevantes
+    if (name === "nombres" || name === "apellidos") {
+      validateField(name, value);
+    }
+    if (name === "correo") {
+      validateField(name, value);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validar todos los campos antes de enviar
+    const validNombres = validateField("nombres", form.nombres);
+    const validApellidos = validateField("apellidos", form.apellidos);
+    const validTelefono = validateField("telefono", form.telefono);
+    const validCorreo = validateField("correo", form.correo);
+    if (!validNombres || !validApellidos || !validTelefono || !validCorreo) {
+      alert("Por favor corrija los errores en el formulario antes de enviar.");
+      return;
+    }
     try {
       if (id) {
         await axios.put(apiUrl(`/api/admin/usuarios/${id}`), form, {
@@ -77,6 +144,9 @@ const FormUsuario = () => {
               onChange={handleChange}
               required
             />
+            {errors.nombres && (
+              <div className="text-danger small mt-1">{errors.nombres}</div>
+            )}
           </div>
           <div className="col-md-6 col-lg-4">
             <input
@@ -87,6 +157,9 @@ const FormUsuario = () => {
               onChange={handleChange}
               required
             />
+            {errors.apellidos && (
+              <div className="text-danger small mt-1">{errors.apellidos}</div>
+            )}
           </div>
           <div className="col-md-6 col-lg-4">
             <input
@@ -102,21 +175,30 @@ const FormUsuario = () => {
             <input
               className="form-control"
               name="telefono"
-              placeholder="Teléfono"
+              placeholder="7090-1234"
+              title="Formato: 7090-1234"
+              pattern="\d{4}-\d{4}"
               value={form.telefono}
               onChange={handleChange}
               required
             />
+            {errors.telefono && (
+              <div className="text-danger small mt-1">{errors.telefono}</div>
+            )}
           </div>
           <div className="col-md-6 col-lg-4">
             <input
               className="form-control"
               name="correo"
               placeholder="Correo"
+              type="email"
               value={form.correo}
               onChange={handleChange}
               required
             />
+            {errors.correo && (
+              <div className="text-danger small mt-1">{errors.correo}</div>
+            )}
           </div>
           {!id && (
             <div className="col-md-6 col-lg-4">

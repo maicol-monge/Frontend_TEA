@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/TEA Logo.png";
+import Logo from "../assets/tea_logo.png";
 
 const COLOR_PRIMARY = "#457b9d";
 const COLOR_ACCENT = "#f3859e";

@@ -15,6 +15,7 @@ const CrudEspecialistas = () => {
   // filtros para la tabla
   const [filterName, setFilterName] = useState("");
   const [filterEspecialidad, setFilterEspecialidad] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -66,6 +67,7 @@ const CrudEspecialistas = () => {
       setForm({ id_usuario: "", especialidad: "" });
       setBusqueda("");
       setEditId(null);
+      setShowModal(false);
       fetchData();
     } catch (err) {
       console.error("Error al guardar especialista:", err);
@@ -87,6 +89,8 @@ const CrudEspecialistas = () => {
       setBusqueda(
         `${usuario.nombres} ${usuario.apellidos} (${usuario.correo})`
       );
+    // abrir modal en modo edición
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -145,136 +149,214 @@ const CrudEspecialistas = () => {
       <div className="container py-4 flex-grow-1">
         <h2 className="mb-4">Especialistas</h2>
 
-        {/* ======= FORMULARIO ======= */}
-        <form
-          className="row g-2 mb-4 position-relative"
-          onSubmit={handleSubmit}
-        >
-          {/* Buscador de usuario especialista */}
-          <div className="col-12 col-md-6 position-relative">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar usuario especialista..."
-              value={busqueda}
-              onChange={(e) => {
-                setBusqueda(e.target.value);
-                setMostrarOpciones(true);
-              }}
-              onFocus={() => setMostrarOpciones(true)}
-              onBlur={() => setTimeout(() => setMostrarOpciones(false), 200)}
-              required
-            />
-            {mostrarOpciones && usuariosFiltrados.length > 0 && (
-              <ul
-                className="list-group position-absolute w-100"
-                style={{
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                  zIndex: 10,
-                }}
-              >
-                {usuariosFiltrados.map((u) => (
-                  <li
-                    key={u.id_usuario}
-                    className="list-group-item list-group-item-action"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setForm({ ...form, id_usuario: u.id_usuario });
-                      setBusqueda(`${u.nombres} ${u.apellidos} (${u.correo})`);
-                      setMostrarOpciones(false);
-                    }}
-                  >
-                    {u.nombres} {u.apellidos} — {u.correo}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="col-12 col-md-4">
-            <input
-              className="form-control"
-              name="especialidad"
-              placeholder="Especialidad"
-              value={form.especialidad}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="col-12 col-md-2 d-flex gap-2">
-            <button className="btn btn-success w-100" type="submit">
-              {editId ? "Actualizar" : "Crear"}
-            </button>
-            {editId && (
-              <button
-                className="btn btn-secondary w-100"
-                type="button"
-                onClick={() => {
-                  setEditId(null);
-                  setForm({ id_usuario: "", especialidad: "" });
-                  setBusqueda("");
-                }}
-              >
-                Cancelar
-              </button>
-            )}
-          </div>
-        </form>
+        {/* Botón para abrir modal de agregar */}
+        <div className="d-flex justify-content-end mb-3">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              // abrir modal en modo creación
+              setForm({ id_usuario: "", especialidad: "" });
+              setBusqueda("");
+              setEditId(null);
+              setShowModal(true);
+            }}
+          >
+            + Agregar especialista
+          </button>
+        </div>
 
         {/* ======= FILTROS ======= */}
-        <div className="row mb-3 g-2 align-items-end">
-          <div className="col-12 col-md-6">
-            <label className="form-label small">Buscar por nombre</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nombre del usuario..."
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-            />
-          </div>
+        <div className="card mb-3">
+          <div className="card-header">Buscar / Filtrar especialistas</div>
+          <div className="card-body">
+            <div className="row mb-3 g-2 align-items-end">
+              <div className="col-12 col-md-6">
+                <label className="form-label small">Buscar por nombre</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Nombre del usuario..."
+                  value={filterName}
+                  onChange={(e) => setFilterName(e.target.value)}
+                />
+              </div>
 
-          <div className="col-8 col-md-4">
-            <label className="form-label small">Filtrar por especialidad</label>
-            <select
-              className="form-control"
-              value={filterEspecialidad}
-              onChange={(e) => setFilterEspecialidad(e.target.value)}
-            >
-              <option value="">-- Todas --</option>
-              {uniqueEspecialidades.map((sp) => (
-                <option key={sp} value={sp}>
-                  {sp}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div className="col-8 col-md-4">
+                <label className="form-label small">
+                  Filtrar por especialidad
+                </label>
+                <select
+                  className="form-control"
+                  value={filterEspecialidad}
+                  onChange={(e) => setFilterEspecialidad(e.target.value)}
+                >
+                  <option value="">-- Todas --</option>
+                  {uniqueEspecialidades.map((sp) => (
+                    <option key={sp} value={sp}>
+                      {sp}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="col-4 col-md-2 d-grid">
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                setFilterName("");
-                setFilterEspecialidad("");
-              }}
-            >
-              Limpiar
-            </button>
+              <div className="col-4 col-md-2 d-grid">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    setFilterName("");
+                    setFilterEspecialidad("");
+                  }}
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* ======= MODAL (Agregar / Editar) ======= */}
+        {showModal && (
+          <div
+            className="modal d-block"
+            tabIndex="-1"
+            role="dialog"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+          >
+            <div
+              className="modal-dialog modal-lg modal-dialog-centered"
+              role="document"
+            >
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    {editId ? "Editar especialista" : "Agregar especialista"}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={() => setShowModal(false)}
+                  />
+                </div>
+                <div className="modal-body">
+                  <form className="row g-3" onSubmit={handleSubmit}>
+                    <div className="col-12 position-relative">
+                      <label className="form-label small">
+                        Usuario especialista
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Buscar y seleccionar usuario..."
+                        value={busqueda}
+                        onChange={(e) => {
+                          setBusqueda(e.target.value);
+                          setMostrarOpciones(true);
+                        }}
+                        onFocus={() => setMostrarOpciones(true)}
+                        onBlur={() =>
+                          setTimeout(() => setMostrarOpciones(false), 200)
+                        }
+                        required
+                      />
+                      {mostrarOpciones && usuariosFiltrados.length > 0 && (
+                        <ul
+                          className="list-group position-absolute w-100 shadow-sm"
+                          style={{
+                            maxHeight: "220px",
+                            overflowY: "auto",
+                            zIndex: 1100,
+                          }}
+                        >
+                          {usuariosFiltrados.map((u) => (
+                            <li
+                              key={u.id_usuario}
+                              className="list-group-item list-group-item-action"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                setForm({ ...form, id_usuario: u.id_usuario });
+                                setBusqueda(
+                                  `${u.nombres} ${u.apellidos} (${u.correo})`
+                                );
+                                setMostrarOpciones(false);
+                              }}
+                            >
+                              <strong>
+                                {u.nombres} {u.apellidos}
+                              </strong>
+                              <div className="text-muted small">{u.correo}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label small">Especialidad</label>
+                      <input
+                        className="form-control"
+                        name="especialidad"
+                        placeholder="Ej. Pediatría"
+                        value={form.especialidad}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-12 d-flex justify-content-end gap-2 mt-2">
+                      <button
+                        className="btn btn-secondary"
+                        type="button"
+                        onClick={() => {
+                          setShowModal(false);
+                          setEditId(null);
+                          setForm({ id_usuario: "", especialidad: "" });
+                          setBusqueda("");
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button className="btn btn-success" type="submit">
+                        {editId ? "Actualizar" : "Crear"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ======= TABLA ======= */}
-        <div className="table-responsive">
+        <div className="overflow-auto" style={{ maxHeight: "420px" }}>
           <table className="table table-bordered table-hover">
             <thead className="table-primary">
               <tr>
-                <th>ID</th>
-                <th>Nombre del Usuario</th>
-                <th>Especialidad</th>
-                <th>Acciones</th>
+                <th
+                  className="position-sticky top-0 bg-primary"
+                  style={{ zIndex: 2 }}
+                >
+                  ID
+                </th>
+                <th
+                  className="position-sticky top-0 bg-primary"
+                  style={{ zIndex: 2 }}
+                >
+                  Nombre del Usuario
+                </th>
+                <th
+                  className="position-sticky top-0 bg-primary"
+                  style={{ zIndex: 2 }}
+                >
+                  Especialidad
+                </th>
+                <th
+                  className="position-sticky top-0 bg-primary"
+                  style={{ zIndex: 2 }}
+                >
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>

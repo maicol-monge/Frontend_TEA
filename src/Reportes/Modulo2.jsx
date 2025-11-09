@@ -7,6 +7,17 @@ export default function ReporteModulo2({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
+  // Hoisted para evitar TDZ
+  function formatFecha(fechaStr) {
+    if (!fechaStr) return "";
+    const d = new Date(fechaStr);
+    if (isNaN(d)) return "";
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
   // Normaliza raíz
   const root = datos?.datos ? datos.datos : datos;
 
@@ -22,17 +33,6 @@ export default function ReporteModulo2({ datos }) {
   const clasificacionADOS = datos?.clasificacion || root?.clasificacion || "";
   const diagnosticoGeneral = datos?.diagnostico || root?.diagnostico || "";
   const comparativaADOS = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "";
-
-  // Formato de fecha
-  const formatFecha = (fechaStr) => {
-    if (!fechaStr) return "";
-    const d = new Date(fechaStr);
-    if (isNaN(d)) return "";
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
 
   // Conversión de puntaje igual que en Modulo1.jsx
   const convertirPuntaje = (puntaje, id_algoritmo, id_codificacion) => {
@@ -115,6 +115,9 @@ export default function ReporteModulo2({ datos }) {
 
   // Total Global
   const totalGlobal = totalAS + totalCRR;
+
+  // Descripción de nivel (faltaba)
+  const descripcionNivelSintomas = getDescripcionComparativa(comparativaADOS);
 
   // PDF
   const generarPDF = () => {

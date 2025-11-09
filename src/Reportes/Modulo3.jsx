@@ -10,6 +10,17 @@ export default function ReporteModulo3({ datos }) {
   // Normaliza raíz
   const root = datos?.datos ? datos.datos : datos;
 
+  // Hoisted para evitar usar antes de inicializar
+  function formatFecha(fechaStr) {
+    if (!fechaStr) return "";
+    const d = new Date(fechaStr);
+    if (isNaN(d)) return "";
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
   // Datos personales
   const nombres = root?.nombres || "";
   const apellidos = root?.apellidos || "";
@@ -21,18 +32,8 @@ export default function ReporteModulo3({ datos }) {
   const clasificacionADOS = datos?.clasificacion || root?.clasificacion || "";
   const diagnosticoGeneral = datos?.diagnostico || root?.diagnostico || "";
   const comparativaADOS = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "";
-  const totalGlobal = datos?.total_punto || root?.total_punto || "";
-
-  // Función para formatear la fecha a dd-MM-yyyy
-  const formatFecha = (fechaStr) => {
-    if (!fechaStr) return "";
-    const d = new Date(fechaStr);
-    if (isNaN(d)) return "";
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
+  // const totalGlobal = datos?.total_punto || root?.total_punto || ""; // <- causaba redeclaración
+  const totalGlobalBack = datos?.total_punto || root?.total_punto || "";
 
   // Función para descripción de nivel de síntomas
   const getDescripcionComparativa = (punt) => {
@@ -108,6 +109,12 @@ export default function ReporteModulo3({ datos }) {
   const totalCRR = [
     usoEsteriotipado, interesSensorial, manierismosManos, interesExcesivo
   ].reduce((a, b) => a + b, 0);
+
+  // Total Global calculado (AS + CRR)
+  const totalGlobal = totalAS + totalCRR;
+
+  // Descripción de nivel (faltaba)
+  const descripcionNivelSintomas = getDescripcionComparativa(comparativaADOS);
 
   // PDF
   const generarPDF = () => {

@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 
 const CrudActividades = () => {
   const [actividades, setActividades] = useState([]);
+  const [filterName, setFilterName] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -30,6 +31,18 @@ const CrudActividades = () => {
       <div className="container py-4 flex-grow-1">
         <h2 className="mb-4">Actividades ADOS</h2>
         {/* Vista de solo lectura: agregar/editar/eliminar deshabilitados */}
+
+        {/* Filtro por nombre de actividad */}
+        <div className="mb-3">
+          <label className="form-label">Buscar por nombre de actividad</label>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Escriba el nombre o parte del nombre..."
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+          />
+        </div>
 
         {/* Modal y operaciones de edición/creación eliminadas: solo vista */}
         <div style={{ overflow: "auto", maxHeight: 420 }} className="mb-4">
@@ -90,16 +103,25 @@ const CrudActividades = () => {
               </tr>
             </thead>
             <tbody>
-              {actividades.map((a) => (
-                <tr key={a.id_actividad}>
-                  <td>{a.id_actividad}</td>
-                  <td>{a.id_ados}</td>
-                  <td>{a.nombre_actividad}</td>
-                  <td>{a.observacion}</td>
-                  <td>{a.puntuacion}</td>
-                  {/* Acciones deshabilitadas */}
-                </tr>
-              ))}
+              {actividades
+                .filter((a) =>
+                  a.nombre_actividad
+                    ? a.nombre_actividad
+                        .toString()
+                        .toLowerCase()
+                        .includes(filterName.toLowerCase())
+                    : false
+                )
+                .map((a) => (
+                  <tr key={a.id_actividad}>
+                    <td>{a.id_actividad}</td>
+                    <td>{a.id_ados}</td>
+                    <td>{a.nombre_actividad}</td>
+                    <td>{a.observacion}</td>
+                    <td>{a.puntuacion}</td>
+                    {/* Acciones deshabilitadas */}
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

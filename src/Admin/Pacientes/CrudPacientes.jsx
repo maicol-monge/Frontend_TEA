@@ -168,7 +168,7 @@
 
 // export default CrudPacientes;
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config/apiConfig";
@@ -185,7 +185,7 @@ const CrudPacientes = () => {
   const navigate = useNavigate();
 
   // Cargar pacientes y usuarios
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [pacRes, userRes] = await Promise.all([
         axios.get(apiUrl("/api/admin/pacientes"), {
@@ -200,11 +200,11 @@ const CrudPacientes = () => {
     } catch (err) {
       console.error("Error al cargar datos:", err);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -310,16 +310,48 @@ const CrudPacientes = () => {
           {/* internal scroll using Bootstrap utilities + inline maxHeight */}
           <div className="overflow-auto" style={{ maxHeight: "420px" }}>
             <table className="table table-bordered table-hover">
-              <thead className="table-primary">
+              <thead>
                 <tr>
-                  <th className="position-sticky top-0 bg-primary">
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
                     Nombre del Usuario
                   </th>
-                  <th className="position-sticky top-0 bg-primary">
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
                     Fecha Nacimiento
                   </th>
-                  <th className="position-sticky top-0 bg-primary">Sexo</th>
-                  <th className="position-sticky top-0 bg-primary">Acciones</th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Sexo
+                  </th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>

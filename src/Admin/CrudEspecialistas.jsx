@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import axios from "axios";
 import { apiUrl } from "../config/apiConfig";
 import NavbarAdmin from "../components/NavbarAdmin";
@@ -45,7 +46,7 @@ const CrudEspecialistas = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -57,12 +58,24 @@ const CrudEspecialistas = () => {
         await axios.put(apiUrl(`/api/admin/especialistas/${editId}`), form, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Especialista actualizado correctamente");
+        Swal.fire({
+          icon: "success",
+          title: "Actualizado",
+          text: "Especialista actualizado correctamente",
+          timer: 1600,
+          showConfirmButton: false,
+        });
       } else {
         await axios.post(apiUrl("/api/admin/especialistas"), form, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Especialista creado correctamente");
+        Swal.fire({
+          icon: "success",
+          title: "Creado",
+          text: "Especialista creado correctamente",
+          timer: 1600,
+          showConfirmButton: false,
+        });
       }
       setForm({ id_usuario: "", especialidad: "" });
       setBusqueda("");
@@ -71,7 +84,11 @@ const CrudEspecialistas = () => {
       fetchData();
     } catch (err) {
       console.error("Error al guardar especialista:", err);
-      alert("Error al guardar especialista");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al guardar especialista",
+      });
     }
   };
 
@@ -94,14 +111,34 @@ const CrudEspecialistas = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("¿Eliminar especialista?")) {
+    const result = await Swal.fire({
+      title: "¿Eliminar especialista?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
       try {
         await axios.delete(apiUrl(`/api/admin/especialistas/${id}`), {
           headers: { Authorization: `Bearer ${token}` },
         });
+        Swal.fire({
+          icon: "success",
+          title: "Eliminado",
+          timer: 1200,
+          showConfirmButton: false,
+        });
         fetchData();
       } catch (err) {
         console.error("Error al eliminar especialista:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo eliminar el especialista.",
+        });
       }
     }
   };
@@ -331,29 +368,45 @@ const CrudEspecialistas = () => {
         {/* ======= TABLA ======= */}
         <div className="overflow-auto" style={{ maxHeight: "420px" }}>
           <table className="table table-bordered table-hover">
-            <thead className="table-primary">
+            <thead>
               <tr>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 2,
+                    background: "#cfe8e9",
+                  }}
                 >
                   ID
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 2,
+                    background: "#cfe8e9",
+                  }}
                 >
                   Nombre del Usuario
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 2,
+                    background: "#cfe8e9",
+                  }}
                 >
                   Especialidad
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 2,
+                    background: "#cfe8e9",
+                  }}
                 >
                   Acciones
                 </th>

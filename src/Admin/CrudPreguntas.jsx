@@ -246,29 +246,34 @@ const CrudPreguntas = () => {
         )}
         <div className="overflow-auto" style={{ maxHeight: "420px" }}>
           <table className="table table-bordered table-hover table-sm">
-            <thead className="table-primary">
+            <thead>
               <tr>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  className="position-sticky top-0"
+                  style={{
+                    zIndex: 2,
+                    position: "sticky",
+                    top: 0,
+                    background: "#cfe8e9",
+                  }}
                 >
                   ID
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  className="position-sticky top-0"
+                  style={{ zIndex: 2, background: "#cfe8e9" }}
                 >
                   Pregunta
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  className="position-sticky top-0"
+                  style={{ zIndex: 2, background: "#cfe8e9" }}
                 >
                   Área
                 </th>
                 <th
-                  className="position-sticky top-0 bg-primary"
-                  style={{ zIndex: 2 }}
+                  className="position-sticky top-0"
+                  style={{ zIndex: 2, background: "#cfe8e9" }}
                 >
                   Acciones
                 </th>

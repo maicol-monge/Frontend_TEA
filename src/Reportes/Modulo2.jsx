@@ -7,6 +7,22 @@ export default function ReporteModulo2({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
+  // Normaliza raíz
+  const root = datos?.datos ? datos.datos : datos;
+
+  // Datos personales desde root
+  const nombres = root?.nombres || "";
+  const apellidos = root?.apellidos || "";
+  const fecha = formatFecha(root?.fecha);
+  const telefono = root?.telefono || "";
+  const especialista = `${root?.especialista_nombres || ""} ${root?.especialista_apellidos || ""}`.trim();
+
+  // Algoritmo y metadatos (top-level prioridad)
+  const id_algoritmo = datos?.id_algoritmo || root?.id_algoritmo || 3;
+  const clasificacionADOS = datos?.clasificacion || root?.clasificacion || "";
+  const diagnosticoGeneral = datos?.diagnostico || root?.diagnostico || "";
+  const comparativaADOS = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "";
+
   // Formato de fecha
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return "";
@@ -63,16 +79,6 @@ export default function ReporteModulo2({ datos }) {
     return "";
   };
 
-  // Desestructura datos personales
-  const nombres = datos?.nombres || "";
-  const apellidos = datos?.apellidos || "";
-  const fecha = formatFecha(datos?.fecha);
-  const telefono = datos?.telefono || "";
-  const especialista = `${datos?.especialista_nombres || ""} ${datos?.especialista_apellidos || ""}`.trim();
-
-  // Algoritmo
-  const id_algoritmo = datos?.id_algoritmo || 3;
-
   // Helpers para mostrar en la columna correcta
   const mostrarColumna = (valor) => id_algoritmo === 3 ? valor : "";
   const mostrarColumna2 = (valor) => id_algoritmo === 4 ? valor : "";
@@ -109,14 +115,6 @@ export default function ReporteModulo2({ datos }) {
 
   // Total Global
   const totalGlobal = totalAS + totalCRR;
-
-  // Clasificación y Diagnóstico
-  const clasificacionADOS = datos?.clasificacion || "";
-  const diagnosticoGeneral = datos?.diagnostico || "";
-
-  // Puntuación Comparativa y Nivel de Síntomas
-  const comparativaADOS = datos?.puntuacion_comparativa || "";
-  const descripcionNivelSintomas = getDescripcionComparativa(comparativaADOS);
 
   // PDF
   const generarPDF = () => {

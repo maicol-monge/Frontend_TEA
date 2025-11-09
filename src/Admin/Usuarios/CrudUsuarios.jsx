@@ -330,18 +330,68 @@ const CrudUsuarios = () => {
           {/* Use Bootstrap utilities for internal scroll: overflow-auto + inline maxHeight */}
           <div className="overflow-auto" style={{ maxHeight: "420px" }}>
             <table className="table table-bordered table-hover">
-              <thead className="table-primary">
+              <thead>
                 <tr>
-                  <th className="position-sticky top-0 bg-primary">Nombres</th>
-                  <th className="position-sticky top-0 bg-primary">
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Nombres
+                  </th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
                     Apellidos
                   </th>
-                  <th className="position-sticky top-0 bg-primary">Correo</th>
-                  <th className="position-sticky top-0 bg-primary">
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Correo
+                  </th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
                     Privilegio
                   </th>
-                  <th className="position-sticky top-0 bg-primary">Estado</th>
-                  <th className="position-sticky top-0 bg-primary">Acciones</th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Estado
+                  </th>
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      background: "#cfe8e9",
+                    }}
+                  >
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>

@@ -67,6 +67,7 @@ const Registrar = () => {
     const [cameraError, setCameraError] = useState('');
     const videoRef = useRef(null);
     const streamRef = useRef(null);
+    const [cameraFacing, setCameraFacing] = useState('user'); // 'user' | 'environment'
 
     // NUEVO: índice del responsable que usa el correo principal (o null)
     const [mainEmailLinkedIndex, setMainEmailLinkedIndex] = useState(null);
@@ -133,48 +134,60 @@ const openCamera = async () => {
     return;
   }
 
-  // Cierra streams previos
-  if (streamRef.current) {
-    streamRef.current.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-  }
+  setCameraOpen(true);
+  await startStream(cameraFacing);
+};
 
+// Inicia/reinicia stream con la cámara indicada
+const startStream = async (facing = 'user') => {
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const cams = devices.filter(d => d.kind === 'videoinput');
-    const preferred = cams[0]?.deviceId;
-
-    const constraints = preferred
-      ? { video: { deviceId: { exact: preferred } }, audio: false }
-      : { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
-
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    // detener stream previo
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    const constraintsMain = { video: { facingMode: { ideal: facing } }, audio: false };
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraintsMain);
+    } catch (e) {
+      // fallback para Safari iOS (usar exact cuando falle ideal)
+      if (facing === 'environment') {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } }, audio: false });
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+    }
     streamRef.current = stream;
-
-    // Abre el modal primero; el srcObject se asigna en el efecto de abajo
-    setCameraOpen(true);
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      // playsInline + muted ya están en el JSX
+      await videoRef.current.play().catch(() => {});
+    }
   } catch (err) {
-    setCameraError(
-      err?.name === 'NotAllowedError' ? 'Permiso de cámara denegado.' :
-      err?.name === 'NotReadableError' ? 'La cámara está en uso por otra aplicación.' :
-      err?.name === 'NotFoundError' ? 'No se encontró una cámara disponible.' :
-      'No se pudo acceder a la cámara.'
-    );
-    console.error('openCamera error:', err);
+    console.error('startStream error:', err);
+    setCameraError('No se pudo acceder a la cámara. Use HTTPS o localhost y verifique permisos.');
   }
 };
 
-// NUEVO: al abrir el modal, enlaza el stream al <video> y reproduce
-React.useEffect(() => {
-  if (!cameraOpen) return;
-  const v = videoRef.current;
-  if (v && streamRef.current) {
-    v.srcObject = streamRef.current;
-    const onLoaded = () => { try { v.play(); } catch {} };
-    v.onloadedmetadata = onLoaded;
-    return () => { v.onloadedmetadata = null; };
-  }
-}, [cameraOpen]);
+    // Girar cámara (frontal/trasera)
+    const switchCamera = async () => {
+      const next = cameraFacing === 'user' ? 'environment' : 'user';
+      setCameraFacing(next);
+      await startStream(next);
+    };
+
+    // NUEVO: al abrir el modal, enlaza el stream al <video> y reproduce
+    React.useEffect(() => {
+      if (!cameraOpen) return;
+      const v = videoRef.current;
+      if (v && streamRef.current) {
+        v.srcObject = streamRef.current;
+        const onLoaded = () => { try { v.play(); } catch {} };
+        v.onloadedmetadata = onLoaded;
+        return () => { v.onloadedmetadata = null; };
+      }
+    }, [cameraOpen]);
 
 // Mejora closeCamera (mantén estilo actual)
 const closeCamera = () => {
@@ -719,7 +732,8 @@ const capturePhoto = async () => {
                                     <div className="d-flex flex-column gap-2">
                                         <input
                                             type="file"
-                                            accept="image/png, image/jpeg"
+                                            accept="image/*"           // permite cámara en móviles
+                                            capture="environment"      // sugiere cámara trasera (iOS/Android)
                                             className="form-control"
                                             onChange={handleFileChange}
                                         />
@@ -777,6 +791,14 @@ const capturePhoto = async () => {
                                                 />
                                             </div>
                                             <div className="d-flex justify-content-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={switchCamera}
+                                                    title={`Cambiar a cámara ${cameraFacing === 'user' ? 'trasera' : 'frontal'}`}
+                                                >
+                                                    Girar cámara
+                                                </button>
                                                 <button
                                                     type="button"
                                                     className="btn btn-secondary"

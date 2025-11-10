@@ -110,39 +110,6 @@ const CrudEspecialistas = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "¿Eliminar especialista?",
-      text: "Esta acción no se puede deshacer.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await axios.delete(apiUrl(`/api/admin/especialistas/${id}`), {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        Swal.fire({
-          icon: "success",
-          title: "Eliminado",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-        fetchData();
-      } catch (err) {
-        console.error("Error al eliminar especialista:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "No se pudo eliminar el especialista.",
-        });
-      }
-    }
-  };
-
   // Buscar usuario por nombre o correo
   const usuariosFiltrados = usuarios.filter(
     (u) =>
@@ -420,16 +387,10 @@ const CrudEspecialistas = () => {
                   <td>{e.especialidad}</td>
                   <td>
                     <button
-                      className="btn btn-warning btn-sm me-2"
+                      className="btn btn-warning btn-sm"
                       onClick={() => handleEdit(e)}
                     >
                       Editar
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(e.id_especialista)}
-                    >
-                      Eliminar
                     </button>
                   </td>
                 </tr>

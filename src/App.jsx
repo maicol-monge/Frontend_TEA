@@ -26,6 +26,7 @@ import CrudTestsAdos2 from "./Admin/CrudTestsAdos2";
 import PerfilEspecialista from "./Especialista/PerfilEspecialista";
 import PerfilPaciente from "./Paciente/PerfilPaciente";
 import Resultados from "./Paciente/Resultados";
+import CrudResponsables from "./Admin/Pacientes/CrudResponsables";
 
 import PacientesADOS from "./Especialista/PacientesADOS";
 import TestsADOSPaciente from "./Especialista/TestsADOSPaciente";
@@ -149,6 +150,7 @@ function App() {
           {/* Pacientes */}
           <Route path="/admin/pacientes" element={<CrudPacientes />} />
           <Route path="/admin/pacientes/nuevo" element={<FormPaciente />} />
+          <Route path="/admin/pacientes/responsables/:id_paciente" element={<CrudResponsables />} />
           <Route
             path="/admin/pacientes/editar/:id"
             element={<FormPaciente />}

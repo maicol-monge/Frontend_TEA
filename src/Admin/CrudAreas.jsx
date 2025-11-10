@@ -64,14 +64,6 @@ const CrudAreas = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) =>
-    window.confirm("¿Eliminar área?") &&
-    axios
-      .delete(apiUrl(`/api/admin/areas/${id}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(fetchAreas);
-
   return (
     <div
       className="d-flex flex-column min-vh-100"
@@ -231,12 +223,7 @@ const CrudAreas = () => {
                     >
                       Editar
                     </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(a.id_area)}
-                    >
-                      Eliminar
-                    </button>
+                    {/* Eliminado: no se permite eliminar áreas */}
                   </td>
                 </tr>
               ))}

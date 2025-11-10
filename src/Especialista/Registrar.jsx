@@ -125,105 +125,105 @@ const Registrar = () => {
     // CAMERA FUNCTIONS
     // MEJORA EN OPEN CAMERA
 const openCamera = async () => {
-    setCameraError('');
-    try {
-        // Detener cualquier stream anterior
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-        }
+  setCameraError('');
 
-        const constraints = {
-            video: {
-                facingMode: 'user',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
-        
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        streamRef.current = stream;
-        
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            // Esperar a que el video esté listo
-            videoRef.current.onloadedmetadata = () => {
-                videoRef.current.play().catch(err => {
-                    console.error('Error al reproducir video:', err);
-                    setCameraError('Error al iniciar la cámara');
-                });
-            };
-        }
-        setCameraOpen(true);
-    } catch (err) {
-        console.error('Error al acceder a la cámara:', err);
-        setCameraError('No se pudo acceder a la cámara. Asegúrate de permitir los permisos de cámara y que estés en HTTPS o localhost.');
-    }
+  const isLocalhost = ['localhost', '127.0.0.1'].includes(location.hostname);
+  if (!window.isSecureContext && !isLocalhost) {
+    setCameraError('La cámara requiere ejecutar el sitio en HTTPS o en http://localhost.');
+    return;
+  }
+
+  // Cierra streams previos
+  if (streamRef.current) {
+    streamRef.current.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+  }
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter(d => d.kind === 'videoinput');
+    const preferred = cams[0]?.deviceId;
+
+    const constraints = preferred
+      ? { video: { deviceId: { exact: preferred } }, audio: false }
+      : { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    streamRef.current = stream;
+
+    // Abre el modal primero; el srcObject se asigna en el efecto de abajo
+    setCameraOpen(true);
+  } catch (err) {
+    setCameraError(
+      err?.name === 'NotAllowedError' ? 'Permiso de cámara denegado.' :
+      err?.name === 'NotReadableError' ? 'La cámara está en uso por otra aplicación.' :
+      err?.name === 'NotFoundError' ? 'No se encontró una cámara disponible.' :
+      'No se pudo acceder a la cámara.'
+    );
+    console.error('openCamera error:', err);
+  }
 };
 
-    // MEJORA EN CLOSE CAMERA
+// NUEVO: al abrir el modal, enlaza el stream al <video> y reproduce
+React.useEffect(() => {
+  if (!cameraOpen) return;
+  const v = videoRef.current;
+  if (v && streamRef.current) {
+    v.srcObject = streamRef.current;
+    const onLoaded = () => { try { v.play(); } catch {} };
+    v.onloadedmetadata = onLoaded;
+    return () => { v.onloadedmetadata = null; };
+  }
+}, [cameraOpen]);
+
+// Mejora closeCamera (mantén estilo actual)
 const closeCamera = () => {
-    if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => {
-            track.stop();
-        });
-        streamRef.current = null;
-    }
-    if (videoRef.current) {
-        videoRef.current.srcObject = null;
-    }
-    setCameraOpen(false);
-    setCameraError('');
+  if (streamRef.current) {
+    streamRef.current.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
+  }
+  if (videoRef.current) videoRef.current.srcObject = null;
+  setCameraOpen(false);
+  setCameraError('');
 };
 
-    // FUNCIÓN CAPTUREPHOTO CORREGIDA
-const capturePhoto = () => {
-    if (!videoRef.current) return;
-    
-    const video = videoRef.current;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    
-    // Dibujar el frame actual del video en el canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    // Convertir a blob y crear archivo
-    canvas.toBlob((blob) => {
-        if (blob) {
-            const file = new File([blob], `captura_${Date.now()}.jpg`, { 
-                type: 'image/jpeg',
-                lastModified: Date.now()
-            });
-            
-            // Limpiar preview anterior si existe
-            if (previewUrl) {
-                URL.revokeObjectURL(previewUrl);
-            }
-            
-            setImagenFile(file);
-            const url = URL.createObjectURL(blob);
-            setPreviewUrl(url);
-            
-            closeCamera();
-            
-            Swal.fire({
-                title: '¡Foto capturada!',
-                text: 'La imagen se ha capturado correctamente.',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: 'No se pudo capturar la foto',
-                icon: 'error',
-                confirmButtonText: 'Aceptar'
-            });
-        }
-    }, 'image/jpeg', 0.9); // Calidad del 90%
+// Cambia capturePhoto a async y espera a que el video tenga dimensiones
+const capturePhoto = async () => {
+  const video = videoRef.current;
+  if (!video) return;
+
+  // Espera a que cargue el primer frame
+  if (!video.videoWidth || !video.videoHeight) {
+    await new Promise(resolve => {
+      const handler = () => { video.removeEventListener('loadeddata', handler); resolve(); };
+      video.addEventListener('loadeddata', handler, { once: true });
+      // fallback de seguridad
+      setTimeout(resolve, 500);
+    });
+  }
+  if (!video.videoWidth || !video.videoHeight) {
+    Swal.fire({ title: 'Error', text: 'El video no está listo para capturar.', icon: 'error', confirmButtonText: 'Aceptar' });
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+  if (!blob) {
+    Swal.fire({ title: 'Error', text: 'No se pudo capturar la foto', icon: 'error', confirmButtonText: 'Aceptar' });
+    return;
+  }
+
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  const file = new File([blob], `captura_${Date.now()}.jpg`, { type: 'image/jpeg' });
+  setImagenFile(file);
+  setPreviewUrl(URL.createObjectURL(blob));
+  closeCamera();
+  Swal.fire({ title: '¡Foto capturada!', text: 'Se usará como imagen de perfil.', icon: 'success', timer: 1500, showConfirmButton: false });
 };
 
     // Limpiar object URL al desmontar / cambiar

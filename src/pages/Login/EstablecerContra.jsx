@@ -3,7 +3,7 @@ import axios from 'axios';
 import { apiUrl } from '../../config/apiConfig';
 import Swal from 'sweetalert2';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from "../../assets/TEA logo.png"; // Ajusta la ruta si tu logo está en otra carpeta
+import logo from "../../assets/tea_logo.png"; // Ajusta la ruta si tu logo está en otra carpeta
 
 const COLOR_BG = "#a8dadc";
 const COLOR_PRIMARY = "#457b9d";

@@ -370,10 +370,12 @@ const CrudPacientes = () => {
                         Editar
                       </button>
                       <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(p.id_paciente)}
+                        className="btn btn-info btn-sm"
+                        onClick={() =>
+                          navigate(`/admin/pacientes/responsables/${p.id_paciente}`)
+                        }
                       >
-                        Eliminar
+                        Responsables
                       </button>
                     </td>
                   </tr>

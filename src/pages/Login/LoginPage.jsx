@@ -1,5 +1,5 @@
 import LoginForm from "../../components/LoginForm";
-import Logo from "../../assets/TEA Logo.png"; // Ajusta la ruta si es necesario
+import Logo from "../../assets/tea_logo.png"; // Ajusta la ruta si es necesario
 
 const LoginPage = () => {
     return (

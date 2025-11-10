@@ -100,7 +100,7 @@ const CrudPreguntas = () => {
 
   const getAreaName = (id) => {
     const a = areas.find((x) => x.id_area === id);
-    return a ? a.area : id;
+    return a ? a.area : String(id); // siempre string
   };
 
   return (
@@ -207,19 +207,16 @@ const CrudPreguntas = () => {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">Área</label>
+                      {/* Área solo lectura: no editable desde esta vista */}
                       <input
-                        list="areas-list"
                         className="form-control"
                         value={areaDisplay}
-                        onChange={handleAreaDisplayChange}
-                        placeholder="Escribe para buscar área..."
-                        required
+                        readOnly
+                        disabled
                       />
-                      <datalist id="areas-list">
-                        {areas.map((a) => (
-                          <option key={a.id_area} value={displayForArea(a)} />
-                        ))}
-                      </datalist>
+                      <small className="text-muted">
+                        El área no se puede cambiar desde aquí.
+                      </small>
                     </div>
                     <div className="d-flex justify-content-end gap-2">
                       <button
@@ -284,12 +281,16 @@ const CrudPreguntas = () => {
                 .filter((p) => {
                   const preguntaMatch =
                     !filterPregunta ||
-                    p.pregunta
+                    (p.pregunta || "")
                       .toLowerCase()
                       .includes(filterPregunta.toLowerCase());
-                  const areaName = getAreaName(p.id_area).toLowerCase();
+
+                  const rawAreaName = getAreaName(p.id_area);
+                  const areaName = (rawAreaName || "").toString().toLowerCase();
+
                   const areaMatch =
-                    !filterArea || areaName.includes(filterArea.toLowerCase());
+                    !filterArea || areaName.includes((filterArea || "").toLowerCase());
+
                   return preguntaMatch && areaMatch;
                 })
                 .map((p) => (

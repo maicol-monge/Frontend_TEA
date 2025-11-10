@@ -126,24 +126,24 @@ const CrudTestsAdiR = () => {
       });
   };
 
-  const handleEdit = (test) => {
-    setEditId(test.id_adir);
-    setForm(test);
+  // const handleEdit = (test) => {
+  //   setEditId(test.id_adir);
+  //   setForm(test);
 
-    const pNameStr = findPacienteName(test.id_paciente);
-    const eNameStr = findEspecialistaName(test.id_especialista);
+  //   const pNameStr = findPacienteName(test.id_paciente);
+  //   const eNameStr = findEspecialistaName(test.id_especialista);
 
-    setPacienteDisplay(
-      pNameStr ? `${test.id_paciente} - ${pNameStr}` : `${test.id_paciente}`
-    );
-    setEspecialistaDisplay(
-      eNameStr
-        ? `${test.id_especialista} - ${eNameStr}`
-        : `${test.id_especialista}`
-    );
+  //   setPacienteDisplay(
+  //     pNameStr ? `${test.id_paciente} - ${pNameStr}` : `${test.id_paciente}`
+  //   );
+  //   setEspecialistaDisplay(
+  //     eNameStr
+  //       ? `${test.id_especialista} - ${eNameStr}`
+  //       : `${test.id_especialista}`
+  //   );
 
-    setShowModal(true);
-  };
+  //   setShowModal(true);
+  // };
 
   return (
     <div
@@ -394,11 +394,11 @@ const CrudTestsAdiR = () => {
                 >
                   Diagnóstico
                 </th>
-                <th
+                {/* <th
                   style={{ position: "sticky", top: 0, background: "#cfe8e9" }}
                 >
                   Acciones
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody>
@@ -451,14 +451,14 @@ const CrudTestsAdiR = () => {
                     </td>
                     <td>{t.fecha}</td>
                     <td>{t.diagnostico}</td>
-                    <td>
+                    {/* <td>
                       <button
                         className="btn btn-warning btn-sm"
                         onClick={() => handleEdit(t)}
                       >
                         Editar
                       </button>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
             </tbody>

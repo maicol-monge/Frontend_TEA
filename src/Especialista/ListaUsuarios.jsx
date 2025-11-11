@@ -4,33 +4,40 @@ import { apiUrl } from "../config/apiConfig";
 
 import Navbar from "../components/Navbar_espe";
 import Footer from "../components/Footer";
+import "./ListaUsuarios.css";
 
-// Modal sencillo (sin dependencia extra)
+// Colores del sistema (coinciden con `NavbarAdmin`)
+const COLOR_PRIMARY = "#457b9d";
+const COLOR_ACCENT = "#f3859e";
+
+// Modal sencillo (sin dependencia extra) — presentación mejorada
 function Modal({ show, onClose, title, children }) {
   if (!show) return null;
   return (
     <div
-      className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-      style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
+      className="lu-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lu-modal-title"
       onClick={(e) => {
         // cerrar si clic fuera del contenido
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div
-        className="bg-white rounded shadow"
-        style={{ maxWidth: 900, width: "95%" }}
-      >
-        <div className="d-flex align-items-center justify-content-between border-bottom p-3">
-          <h5 className="m-0">{title}</h5>
+      <div className="lu-modal" style={{ maxWidth: 900 }}>
+        <div className="lu-modal-header">
+          <h5 id="lu-modal-title" className="m-0">
+            {title}
+          </h5>
           <button
-            className="btn btn-sm btn-outline-secondary"
+            className="lu-modal-close"
             onClick={onClose}
+            aria-label="Cerrar"
           >
-            Cerrar
+            <span aria-hidden="true">×</span>
           </button>
         </div>
-        <div className="p-3">{children}</div>
+        <div className="lu-modal-body">{children}</div>
       </div>
     </div>
   );
@@ -46,6 +53,10 @@ const ListaUsuarios = () => {
   const [detalle, setDetalle] = useState(null); // { paciente:{}, usuario:{}, responsables_legales:[] }
   const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [detalleErr, setDetalleErr] = useState("");
+
+  // Filtros UI
+  const [searchName, setSearchName] = useState("");
+  const [filterSexo, setFilterSexo] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -96,67 +107,145 @@ const ListaUsuarios = () => {
   };
 
   return (
-    <div className="container py-3">
+    <div>
       <Navbar />
-      <div className="d-flex align-items-center justify-content-between mb-3">
-        <h3 className="m-0">Pacientes</h3>
-      </div>
 
-      {loading && <div className="alert alert-info">Cargando pacientes…</div>}
-      {err && !loading && <div className="alert alert-danger">{err}</div>}
-
-      {!loading && !err && (
-        <div className="table-responsive">
-          <table className="table align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>Paciente</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Fecha Nac.</th>
-                <th>Sexo</th>
-                <th style={{ width: 160 }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pacientes.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center text-muted">
-                    No hay pacientes registrados.
-                  </td>
-                </tr>
-              ) : (
-                pacientes.map((p) => (
-                  <tr key={p.id_paciente}>
-                    <td>
-                      <strong>
-                        {p.nombres} {p.apellidos}
-                      </strong>
-                    </td>
-                    <td>{p.correo || "—"}</td>
-                    <td>{p.telefono || "—"}</td>
-
-                    <td>
-                      {p.fecha_nacimiento
-                        ? String(p.fecha_nacimiento).split("T")[0]
-                        : "—"}
-                    </td>
-                    <td>{p.sexo || "—"}</td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-primary"
-                        onClick={() => abrirDetalle(p.id_paciente)}
-                      >
-                        Ver representantes
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <div className="lu-card mt-3 px-5">
+        <div
+          className="lu-card-header"
+          style={{
+            background: COLOR_PRIMARY,
+            borderBottom: `4px solid ${COLOR_ACCENT}`,
+          }}
+        >
+          <div>
+            <h3 className="m-0">Pacientes</h3>
+            <small className="text-white-50">
+              Lista de pacientes registrados
+            </small>
+          </div>
         </div>
-      )}
+        <div className="lu-filters my-3 d-flex flex-wrap align-items-center gap-2">
+          <div className="input-group w-50">
+            <span className="input-group-text">🔎</span>
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Buscar por nombre..."
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              aria-label="Buscar por nombre"
+            />
+          </div>
+
+          <select
+            className="form-select w-25 mx-3"
+            value={filterSexo}
+            onChange={(e) => setFilterSexo(e.target.value)}
+            aria-label="Filtrar por sexo"
+          >
+            <option value="">Todos los sexos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
+
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            style={{ width: "200px" }}
+            onClick={() => {
+              setSearchName("");
+              setFilterSexo("");
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
+
+        <div className="lu-card-body">
+          {loading && (
+            <div className="alert alert-info">Cargando pacientes…</div>
+          )}
+          {err && !loading && <div className="alert alert-danger">{err}</div>}
+
+          {!loading && !err && (
+            <div className="table-responsive lu-table-scroll">
+              <table className="table align-middle table-hover mb-0">
+                <thead>
+                  <tr className="table-light">
+                    <th>Paciente</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Fecha Nac.</th>
+                    <th>Sexo</th>
+                    <th style={{ width: 180 }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    // aplicar filtros en cliente: buscar por nombre y filtrar por sexo
+                    const q = String(searchName || "")
+                      .trim()
+                      .toLowerCase();
+                    const filtered = (pacientes || []).filter((p) => {
+                      // nombre completo
+                      const nombre = `${p.nombres || ""} ${
+                        p.apellidos || ""
+                      }`.toLowerCase();
+                      const matchesName = q === "" || nombre.includes(q);
+                      // Normalizar sexo: considerar que la API puede usar 'M'/'F' o 'Masculino'/'Femenino'
+                      const sexoRaw = String(p.sexo || "").trim();
+                      const sexoFirst = sexoRaw.charAt(0).toLowerCase(); // 'm' o 'f' o 'o'
+                      const matchesSexo =
+                        !filterSexo || sexoFirst === filterSexo.toLowerCase();
+                      return matchesName && matchesSexo;
+                    });
+
+                    if (filtered.length === 0) {
+                      return (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="text-center text-muted lu-empty"
+                          >
+                            No hay pacientes registrados.
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return filtered.map((p) => (
+                      <tr key={p.id_paciente}>
+                        <td>
+                          <div className="fw-semibold">
+                            {p.nombres} {p.apellidos}
+                          </div>
+                        </td>
+                        <td>{p.correo || "—"}</td>
+                        <td>{p.telefono || "—"}</td>
+
+                        <td>
+                          {p.fecha_nacimiento
+                            ? String(p.fecha_nacimiento).split("T")[0]
+                            : "—"}
+                        </td>
+                        <td>{p.sexo || "—"}</td>
+                        <td>
+                          <button
+                            className="btn btn-sm lu-accent"
+                            onClick={() => abrirDetalle(p.id_paciente)}
+                          >
+                            Ver representantes
+                          </button>
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
       <Modal
         show={showModal}

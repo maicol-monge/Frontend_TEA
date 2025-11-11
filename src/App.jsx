@@ -47,6 +47,9 @@ import Modulo4 from "./Reportes/Modulo4";
 import ReportAdiR from "./Reportes/ReportAdiR";
 import ReportAdiR_paciente from "./Reportes/ReportAdiR_paciente";
 
+//Agregado ahorita
+import ListaUsuarios from "./Especialista/ListaUsuarios";
+
 function App() {
   useEffect(() => {
     let timeout;
@@ -81,6 +84,7 @@ function App() {
         <Route path="/establecer-contra" element={<EstablecerContra />} />
 
         {/* Solo especialistas (privilegio 0) */}
+        <Route path="/ver-usuarios" element={<ListaUsuarios />} />
         <Route element={<ProtectedRoute allowedPrivileges={[0]} />}>
           <Route path="/home_espe" element={<Home_Espe />} />
           <Route path="/registrar" element={<Registrar />} />
@@ -150,7 +154,10 @@ function App() {
           {/* Pacientes */}
           <Route path="/admin/pacientes" element={<CrudPacientes />} />
           <Route path="/admin/pacientes/nuevo" element={<FormPaciente />} />
-          <Route path="/admin/pacientes/responsables/:id_paciente" element={<CrudResponsables />} />
+          <Route
+            path="/admin/pacientes/responsables/:id_paciente"
+            element={<CrudResponsables />}
+          />
           <Route
             path="/admin/pacientes/editar/:id"
             element={<FormPaciente />}

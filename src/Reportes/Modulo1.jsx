@@ -8,20 +8,23 @@ export default function ReporteModulo1({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
-  // Desestructura los datos recibidos
+  // Normaliza raíz (cuando viene anidado en datos.datos)
+  const root = datos?.datos ? datos.datos : datos;
+
+  // Desestructura (prioriza root para datos personales; otros campos pueden venir top-level)
   const {
-    nombres = "",
-    apellidos = "",
-    fecha = "",
-    telefono = "",
-    especialista_nombres = "",
-    especialista_apellidos = "",
-    puntuaciones = [],
-    diagnostico = "",
-    clasificacion = "",
-    total_punto = "",
-    puntuacion_comparativa = "",
-    id_algoritmo = 1,
+    nombres = root?.nombres || "",
+    apellidos = root?.apellidos || "",
+    fecha = root?.fecha || "",
+    telefono = root?.telefono || "",
+    especialista_nombres = root?.especialista_nombres || "",
+    especialista_apellidos = root?.especialista_apellidos || "",
+    puntuaciones = datos?.puntuaciones || [],
+    diagnostico = datos?.diagnostico || root?.diagnostico || "",
+    clasificacion = datos?.clasificacion || root?.clasificacion || "",
+    total_punto = datos?.total_punto || root?.total_punto || "",
+    puntuacion_comparativa = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "",
+    id_algoritmo = datos?.id_algoritmo || root?.id_algoritmo || 1,
   } = datos || {};
 
   // Helper para obtener y convertir puntaje por código

@@ -48,6 +48,9 @@ const NavbarAdmin = () => {
                 <div className={`collapse navbar-collapse justify-content-end ${showMenu ? "show" : ""}`}>
                     <ul className={`navbar-nav align-items-lg-center ms-auto ${showMenu ? "flex-column text-center" : ""}`}>
                         <li className="nav-item mb-2 mb-lg-0 me-2">
+                            <button className="btn btn-light me-2 w-100" onClick={() => handleNav("/admin/estadisticas")}>Estadísticas</button>
+                        </li>
+                        <li className="nav-item mb-2 mb-lg-0 me-2">
                             <button className="btn btn-light me-2 w-100" onClick={() => handleNav("/admin/usuarios")}>Usuarios</button>
                         </li>
                         <li className="nav-item mb-2 mb-lg-0 me-2">

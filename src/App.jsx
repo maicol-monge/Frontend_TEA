@@ -47,6 +47,9 @@ import Modulo4 from "./Reportes/Modulo4";
 import ReportAdiR from "./Reportes/ReportAdiR";
 import ReportAdiR_paciente from "./Reportes/ReportAdiR_paciente";
 
+
+import EstadisticasAdmin from "../src/Admin/EstadisticasAdmin";
+import EstadisticasEspecialista from "../src/Especialista/EstadisticasEspecialista";
 //Agregado ahorita
 import ListaUsuarios from "./Especialista/ListaUsuarios";
 
@@ -123,6 +126,9 @@ function App() {
           <Route path="/algoritmo/:id_adir" element={<Algoritmo />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/reporte-adir" element={<ReportAdiR />} />
+          <Route path="/estadisticas_especialista" element={<EstadisticasEspecialista />} />
++          <Route path="/estadisticas_especialista/:id" element={<EstadisticasEspecialista />} />
+          <Route path="/especialista/estadisticas" element={<EstadisticasEspecialista />} />
         </Route>
         {/* Solo pacientes (privilegio 1) */}
         <Route element={<ProtectedRoute allowedPrivileges={[1]} />}>
@@ -169,6 +175,7 @@ function App() {
           <Route path="/admin/actividades" element={<CrudActividades />} />
           <Route path="/admin/tests-adir" element={<CrudTestsAdiR />} />
           <Route path="/admin/tests-ados" element={<CrudTestsAdos2 />} />
+           <Route path="/admin/estadisticas" element={<EstadisticasAdmin />} />
         </Route>
       </Routes>
     </Router>

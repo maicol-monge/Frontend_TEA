@@ -5,24 +5,26 @@ export default function ReporteModuleT({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
-  // Desestructura los datos recibidos
+  // Normaliza raíz
+  const root = datos?.datos ? datos.datos : datos;
+
+  // Desestructura usando root para datos personales
   const {
-    nombres = "",
-    apellidos = "",
-    fecha = "",
-    telefono = "",
-    especialista_nombres = "",
-    especialista_apellidos = "",
-    puntuaciones = [],
-    observaciones = [],
-    diagnostico = "",
-    clasificacion = "",
-    total_punto = "",
-    puntuacion_comparativa = "",
-    // Puedes agregar más campos según lo que traigas del backend
+    nombres = root?.nombres || "",
+    apellidos = root?.apellidos || "",
+    fecha = root?.fecha || "",
+    telefono = root?.telefono || "",
+    especialista_nombres = root?.especialista_nombres || "",
+    especialista_apellidos = root?.especialista_apellidos || "",
+    puntuaciones = datos?.puntuaciones || [],
+    observaciones = datos?.observaciones || [],
+    diagnostico = datos?.diagnostico || root?.diagnostico || "",
+    clasificacion = datos?.clasificacion || root?.clasificacion || "",
+    total_punto = datos?.total_punto || root?.total_punto || "",
+    puntuacion_comparativa = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "",
   } = datos || {};
 
-  const { id_algoritmo = 7 } = datos || {}; // Por defecto 7 si no viene
+  const { id_algoritmo = datos?.id_algoritmo || root?.id_algoritmo || 7 } = datos || {};
 
   // Función para generar PDF desde el contenido oculto
   const generarPDF = () => {

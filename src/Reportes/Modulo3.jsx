@@ -7,8 +7,11 @@ export default function ReporteModulo3({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
-  // Función para formatear la fecha a dd-MM-yyyy
-  const formatFecha = (fechaStr) => {
+  // Normaliza raíz
+  const root = datos?.datos ? datos.datos : datos;
+
+  // Hoisted para evitar usar antes de inicializar
+  function formatFecha(fechaStr) {
     if (!fechaStr) return "";
     const d = new Date(fechaStr);
     if (isNaN(d)) return "";
@@ -16,7 +19,21 @@ export default function ReporteModulo3({ datos }) {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
     return `${day}-${month}-${year}`;
-  };
+  }
+
+  // Datos personales
+  const nombres = root?.nombres || "";
+  const apellidos = root?.apellidos || "";
+  const fecha = formatFecha(root?.fecha);
+  const telefono = root?.telefono || "";
+  const especialista = `${root?.especialista_nombres || ""} ${root?.especialista_apellidos || ""}`.trim();
+
+  // Metadatos
+  const clasificacionADOS = datos?.clasificacion || root?.clasificacion || "";
+  const diagnosticoGeneral = datos?.diagnostico || root?.diagnostico || "";
+  const comparativaADOS = datos?.puntuacion_comparativa || root?.puntuacion_comparativa || "";
+  // const totalGlobal = datos?.total_punto || root?.total_punto || ""; // <- causaba redeclaración
+  const totalGlobalBack = datos?.total_punto || root?.total_punto || "";
 
   // Función para descripción de nivel de síntomas
   const getDescripcionComparativa = (punt) => {
@@ -63,13 +80,6 @@ export default function ReporteModulo3({ datos }) {
     return convertirPuntaje(Number(p.puntaje), datos.id_algoritmo, p.id_codificacion);
   };
 
-  // Datos personales
-  const nombres = datos?.nombres || "";
-  const apellidos = datos?.apellidos || "";
-  const fecha = formatFecha(datos?.fecha);
-  const telefono = datos?.telefono || "";
-  const especialista = `${datos?.especialista_nombres || ""} ${datos?.especialista_apellidos || ""}`.trim();
-
   // AS
   const narracionSucesos = getPuntaje("A7");
   const conversacion = getPuntaje("A8");
@@ -100,15 +110,10 @@ export default function ReporteModulo3({ datos }) {
     usoEsteriotipado, interesSensorial, manierismosManos, interesExcesivo
   ].reduce((a, b) => a + b, 0);
 
-  // Total Global
-  const totalGlobal = datos?.total_punto;
+  // Total Global calculado (AS + CRR)
+  const totalGlobal = totalAS + totalCRR;
 
-  // Clasificación y Diagnóstico
-  const clasificacionADOS = datos?.clasificacion || "";
-  const diagnosticoGeneral = datos?.diagnostico || "";
-
-  // Puntuación Comparativa y Nivel de Síntomas
-  const comparativaADOS = datos?.puntuacion_comparativa || "";
+  // Descripción de nivel (faltaba)
   const descripcionNivelSintomas = getDescripcionComparativa(comparativaADOS);
 
   // PDF

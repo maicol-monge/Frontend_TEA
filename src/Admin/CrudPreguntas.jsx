@@ -76,15 +76,15 @@ const CrudPreguntas = () => {
       });
   };
 
-  const handleEdit = (pregunta) => {
-    setEditId(pregunta.id_pregunta);
-    setForm(pregunta);
-    // set display value for area (if areas already loaded)
-    const matchArea = areas.find((a) => a.id_area === pregunta.id_area);
-    if (matchArea) setAreaDisplay(`${matchArea.id_area} - ${matchArea.area}`);
-    else setAreaDisplay("");
-    setShowModal(true);
-  };
+  // const handleEdit = (pregunta) => {
+  //   setEditId(pregunta.id_pregunta);
+  //   setForm(pregunta);
+  //   // set display value for area (if areas already loaded)
+  //   const matchArea = areas.find((a) => a.id_area === pregunta.id_area);
+  //   if (matchArea) setAreaDisplay(`${matchArea.id_area} - ${matchArea.area}`);
+  //   else setAreaDisplay("");
+  //   setShowModal(true);
+  // };
 
   // Eliminado: no se permite eliminar preguntas desde esta vista
 
@@ -268,12 +268,12 @@ const CrudPreguntas = () => {
                 >
                   Área
                 </th>
-                <th
+                {/* <th
                   className="position-sticky top-0"
                   style={{ zIndex: 2, background: "#cfe8e9" }}
                 >
                   Acciones
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody>
@@ -298,7 +298,7 @@ const CrudPreguntas = () => {
                     <td>{p.id_pregunta}</td>
                     <td>{p.pregunta}</td>
                     <td>{getAreaName(p.id_area)}</td>
-                    <td className="align-middle">
+                    {/* <td className="align-middle">
                       <div
                         className="d-inline-flex"
                         role="group"
@@ -312,9 +312,8 @@ const CrudPreguntas = () => {
                         >
                           Editar
                         </button>
-                        {/* Eliminado: no permitir eliminar desde esta vista */}
                       </div>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
             </tbody>

@@ -122,6 +122,31 @@ const Registrar = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Fecha mínima (input) y helper DOB: validar que DOB sea al menos 60 días y menor a 70 años
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const maxDate = yesterday.toISOString().split("T")[0];
+
+  const minDateObj = new Date();
+  minDateObj.setFullYear(minDateObj.getFullYear() - 70);
+  minDateObj.setDate(minDateObj.getDate() + 1); // estrictamente posterior a hace 70 años
+  const minDate = minDateObj.toISOString().split("T")[0];
+
+  const isDOBValid = (dobStr) => {
+    if (!dobStr) return false;
+    const dob = new Date(dobStr);
+    if (isNaN(dob.getTime())) return false;
+    const now = new Date();
+    if (dob > now) return false;
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const ageDays = Math.floor((now - dob) / msPerDay);
+    if (ageDays < 60) return false;
+    const seventyYearsAgo = new Date(now);
+    seventyYearsAgo.setFullYear(now.getFullYear() - 70);
+    if (dob <= seventyYearsAgo) return false;
+    return true;
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && (file.type === "image/png" || file.type === "image/jpeg")) {
@@ -420,6 +445,7 @@ const Registrar = () => {
     if (Number(formData.privilegio) === 1) {
       if (formData.fecha_nacimiento === "" || formData.sexo === "")
         return false;
+      if (!isDOBValid(formData.fecha_nacimiento)) return false;
       if (!responsablesValidos()) return false;
     }
     if (Number(formData.privilegio) === 0) {
@@ -496,6 +522,19 @@ const Registrar = () => {
           });
           return;
         }
+      }
+    }
+
+    // Validar fecha de nacimiento (si aplica)
+    if (Number(formData.privilegio) === 1) {
+      if (!isDOBValid(formData.fecha_nacimiento)) {
+        Swal.fire({
+          title: "Error",
+          text: "Fecha de nacimiento inválida: debe ser mayor a 60 días y menor a 70 años.",
+          icon: "warning",
+          confirmButtonText: "Aceptar",
+        });
+        return;
       }
     }
 
@@ -577,11 +616,6 @@ const Registrar = () => {
       });
     }
   };
-
-  // Calcular el día anterior a hoy en formato YYYY-MM-DD
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const maxDate = yesterday.toISOString().split("T")[0];
 
   return (
     <div
@@ -733,8 +767,29 @@ const Registrar = () => {
                         value={formData.fecha_nacimiento}
                         onChange={handleChange}
                         required
+                        min={minDate}
                         max={maxDate}
+                        aria-describedby="dobHelp"
                       />
+
+                      {/* Mensaje explicativo sobre la restricción y error dinámico */}
+                      <div
+                        id="dobHelp"
+                        className="form-text"
+                        aria-live="polite"
+                      >
+                        <div className="text-muted">
+                          La fecha debe ser mayor a 60 días desde hoy y menor a
+                          70 años.
+                        </div>
+                        {formData.fecha_nacimiento &&
+                          !isDOBValid(formData.fecha_nacimiento) && (
+                            <div className="text-danger mt-1">
+                              Fecha inválida: debe ser mayor a 60 días y menor a
+                              70 años.
+                            </div>
+                          )}
+                      </div>
                     </div>
                     <div className="mb-3">
                       <label

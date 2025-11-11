@@ -14,6 +14,10 @@ const Navbar = () => {
     const nombreUsuario = user?.nombres + " " + user?.apellidos || "Usuario";
     const [showMenu, setShowMenu] = useState(false);
 
+    // ruta para estadísticas del especialista (usa id disponible en user)
+    const especialistaId = user?.id_especialista ?? user?.id_usuario ?? user?.id ?? null;
+    const statsPath = especialistaId ? `/estadisticas_especialista/${especialistaId}` : '/estadisticas_especialista';
+
     const handleLogout = () => {
         import("sweetalert2").then(Swal => {
             Swal.default.fire({
@@ -123,6 +127,19 @@ const Navbar = () => {
                     >
                         Reportes
                     </button>
+
+                    {/* Nuevo botón: Estadísticas especialista */}
+                    <button
+                        className="btn btn-sm ms-2 d-none d-lg-inline"
+                        style={{
+                            background: COLOR_DARK,
+                            color: "#fff",
+                            fontWeight: "bold"
+                        }}
+                        onClick={() => navigate(statsPath)}
+                    >
+                        Estadísticas
+                    </button>
                 </div>
                 <button
                     className="navbar-toggler"
@@ -214,6 +231,24 @@ const Navbar = () => {
                                 }}
                             >
                                 Reportes
+                            </button>
+                        </li>
+
+                        {/* Botón Estadísticas en menú mobile */}
+                        <li className="nav-item d-lg-none mb-2">
+                            <button
+                                className="btn btn-sm w-100"
+                                style={{
+                                    background: COLOR_DARK,
+                                    color: "#fff",
+                                    fontWeight: "bold"
+                                }}
+                                onClick={() => {
+                                    setShowMenu(false);
+                                    navigate(statsPath);
+                                }}
+                            >
+                                Estadísticas
                             </button>
                         </li>
                         <li className="nav-item d-flex flex-column flex-lg-row align-items-center ms-lg-3 mt-2 mt-lg-0">

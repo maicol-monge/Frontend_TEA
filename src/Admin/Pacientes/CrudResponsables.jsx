@@ -95,6 +95,16 @@ const CrudResponsables = () => {
     let v = value;
     if (name === "telefono") v = maskPhone(value);
     if (name === "num_identificacion") v = maskId(value);
+    // Solo letras y espacios para nombre y apellido
+    if (name === "nombre" || name === "apellido") {
+      try {
+        // usar Unicode property escapes cuando esté disponible
+        v = value.replace(/[^^\p{L}\s]/gu, "");
+      } catch {
+        // fallback para entornos que no soporten \p{L}
+        v = value.replace(/[^A-Za-zÀ-ÿ\s]/g, "");
+      }
+    }
     setForm((f) => ({ ...f, [name]: v }));
     if (name === "parentesco" && value !== "OTRO") {
       setForm((f) => ({ ...f, parentesco_otro: "" }));
@@ -118,7 +128,22 @@ const CrudResponsables = () => {
   const validar = () => {
     if (!paciente?.id_paciente) return "Paciente inválido";
     if (!form.nombre.trim()) return "Nombre requerido";
+    // Validar caracteres: sólo letras y espacios
+    try {
+      if (!/^[\p{L}\s]+$/u.test(form.nombre.trim()))
+        return "Nombre: sólo se permiten letras y espacios";
+    } catch {
+      if (!/^[A-Za-zÀ-ÿ\s]+$/.test(form.nombre.trim()))
+        return "Nombre: sólo se permiten letras y espacios";
+    }
     if (!form.apellido.trim()) return "Apellido requerido";
+    try {
+      if (!/^[\p{L}\s]+$/u.test(form.apellido.trim()))
+        return "Apellido: sólo se permiten letras y espacios";
+    } catch {
+      if (!/^[A-Za-zÀ-ÿ\s]+$/.test(form.apellido.trim()))
+        return "Apellido: sólo se permiten letras y espacios";
+    }
     if (form.num_identificacion.length !== 10)
       return "Identificación formato ########-#";
     if (!form.parentesco) return "Parentesco requerido";

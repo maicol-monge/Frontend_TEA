@@ -7,6 +7,9 @@ export default function ReporteModulo4({ datos }) {
   const reportRef = useRef();
   const COLOR_BG = "#f8f9fa";
 
+  // Normaliza raíz (cuando viene anidado en datos.datos)
+  const root = datos?.datos ? datos.datos : datos;
+
   // Formato de fecha
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return "";
@@ -45,12 +48,12 @@ export default function ReporteModulo4({ datos }) {
     return convertirPuntaje(Number(p.puntaje), datos.id_algoritmo, p.id_codificacion);
   };
 
-  // Datos personales
-  const nombres = datos?.nombres || "";
-  const apellidos = datos?.apellidos || "";
-  const fecha = formatFecha(datos?.fecha);
-  const telefono = datos?.telefono || "";
-  const especialista = `${datos?.especialista_nombres || ""} ${datos?.especialista_apellidos || ""}`.trim();
+  // Datos personales (usar root)
+  const nombres = root?.nombres || "";
+  const apellidos = root?.apellidos || "";
+  const fecha = formatFecha(root?.fecha);
+  const telefono = root?.telefono || "";
+  const especialista = `${root?.especialista_nombres || ""} ${root?.especialista_apellidos || ""}`.trim();
 
   // Comunicación
   const usoEsteriotipado = getPuntaje("A4");
@@ -82,9 +85,9 @@ export default function ReporteModulo4({ datos }) {
   const compulsiones = getPuntaje("D5");
   const totalComportamientos = interesSensorial + manierismosManos + interesExcesivo + compulsiones;
 
-  // Clasificación y Diagnóstico
-  const clasificacionADOS = datos?.clasificacion || "";
-  const diagnosticoGeneral = datos?.diagnostico || "";
+  // Clasificación y Diagnóstico (top-level si existen, si no en root)
+  const clasificacionADOS = datos?.clasificacion || root?.clasificacion || "";
+  const diagnosticoGeneral = datos?.diagnostico || root?.diagnostico || "";
 
   // PDF
   const generarPDF = () => {

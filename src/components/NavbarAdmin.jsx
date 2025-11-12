@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Logo from "../assets/tea_logo.png";
@@ -12,6 +12,22 @@ const NavbarAdmin = () => {
 	const [menuAbierto, setMenuAbierto] = useState(false);
 	const [showEval, setShowEval] = useState(false);
 	const [showConfig, setShowConfig] = useState(false);
+	const [isLargeScreen, setIsLargeScreen] = useState(() =>
+		typeof window !== "undefined"
+			? window.matchMedia("(min-width: 992px)").matches
+			: true
+	);
+
+	useEffect(() => {
+		const mq = window.matchMedia("(min-width: 992px)");
+		const handler = (e) => setIsLargeScreen(e.matches);
+		if (mq.addEventListener) mq.addEventListener("change", handler);
+		else mq.addListener(handler);
+		return () => {
+			if (mq.removeEventListener) mq.removeEventListener("change", handler);
+			else mq.removeListener(handler);
+		};
+	}, []);
 
 	const handleLogout = () => {
 		Swal.fire({
@@ -111,8 +127,10 @@ const NavbarAdmin = () => {
 				<button
 					className="navbar-toggler text-white"
 					type="button"
-					onClick={() => setMenuAbierto(!menuAbierto)}
+					aria-controls="navbarAdminNav"
+					aria-expanded={menuAbierto}
 					aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+					onClick={() => setMenuAbierto(!menuAbierto)}
 				>
 					<i
 						className="bi bi-list"
@@ -122,58 +140,63 @@ const NavbarAdmin = () => {
 				</button>
 
 				<div
+					id="navbarAdminNav"
 					className={`collapse navbar-collapse ${
 						menuAbierto ? "show" : ""
-					} mt-2 mt-lg-0 d-flex justify-content-center align-items-center`}
+					} mt-2 mt-lg-0`}
 				>
-					{/* 🔹 Se agrega justify-content-center al ul */}
-					<ul className="navbar-nav mb-2 mb-lg-0 d-flex justify-content-center flex-wrap">
-						<li className="nav-item mx-2">
-							<button
-								className="btn btn-link nav-link text-white d-flex align-items-center"
-								onClick={() => handleNav("/admin/estadisticas")}
-							>
-								<i
-									className="bi bi-graph-up me-2"
-									aria-hidden="true"
-								/>
-								Estadísticas
-							</button>
-						</li>
+					{/* Inner wrapper for responsive layout */}
+					<div className="d-flex flex-column flex-lg-row align-items-center justify-content-between w-100">
+						{/* 🔹 Se agrega justify-content-center al ul */}
+						<ul className="navbar-nav mb-2 mb-lg-0 d-flex justify-content-center flex-wrap">
+							<li className="nav-item mx-2">
+								<button
+									className="btn btn-link nav-link text-white d-flex align-items-center"
+									onClick={() => handleNav("/admin/estadisticas")}
+								>
+									<i
+										className="bi bi-graph-up me-2"
+										aria-hidden="true"
+									/>
+									Estadísticas
+								</button>
+							</li>
 
-						<li className="nav-item mx-2">
-							<button
-								className="btn btn-link nav-link text-white d-flex align-items-center"
-								onClick={() => handleNav("/admin/usuarios")}
-							>
-								<i
-									className="bi bi-people me-2"
-									aria-hidden="true"
-								/>
-								Usuarios
-							</button>
-						</li>
+							<li className="nav-item mx-2">
+								<button
+									className="btn btn-link nav-link text-white d-flex align-items-center"
+									onClick={() => handleNav("/admin/usuarios")}
+								>
+									<i
+										className="bi bi-people me-2"
+										aria-hidden="true"
+									/>
+									Usuarios
+								</button>
+							</li>
 
-						{/* Dropdown Evaluaciones */}
-						<li
-							className="nav-item dropdown mx-2"
-							onMouseEnter={() => setShowEval(true)}
-							onMouseLeave={() => setShowEval(false)}
-						>
-							<button
-								className="btn btn-link nav-link dropdown-toggle text-white d-flex align-items-center"
-								data-bs-toggle="dropdown"
-								aria-expanded={showEval}
+							{/* Dropdown Evaluaciones */}
+							<li
+								className="nav-item dropdown mx-2"
+								onMouseEnter={() => isLargeScreen && setShowEval(true)}
+								onMouseLeave={() => isLargeScreen && setShowEval(false)}
 							>
-								<i
-									className="bi bi-brain me-2"
-									aria-hidden="true"
-								/>
-								Evaluaciones
-							</button>
-							{showEval && (
+								<button
+									className="btn btn-link nav-link dropdown-toggle text-white d-flex align-items-center"
+									data-bs-toggle="dropdown"
+									aria-expanded={showEval}
+									onClick={() => !isLargeScreen && setShowEval((s) => !s)}
+								>
+									<i
+										className="bi bi-brain me-2"
+										aria-hidden="true"
+									/>
+									Evaluaciones
+								</button>
 								<ul
-									className="dropdown-menu show text-center"
+									className={`dropdown-menu ${
+										showEval ? "show" : ""
+									} text-center`}
 									style={{
 										background: COLOR_LIGHT,
 										border: "none",
@@ -213,29 +236,30 @@ const NavbarAdmin = () => {
 										</button>
 									</li>
 								</ul>
-							)}
-						</li>
+							</li>
 
-						{/* Dropdown Configuración */}
-						<li
-							className="nav-item dropdown mx-2"
-							onMouseEnter={() => setShowConfig(true)}
-							onMouseLeave={() => setShowConfig(false)}
-						>
-							<button
-								className="btn btn-link nav-link dropdown-toggle text-white d-flex align-items-center"
-								data-bs-toggle="dropdown"
-								aria-expanded={showConfig}
+							{/* Dropdown Configuración */}
+							<li
+								className="nav-item dropdown mx-2"
+								onMouseEnter={() => isLargeScreen && setShowConfig(true)}
+								onMouseLeave={() => isLargeScreen && setShowConfig(false)}
 							>
-								<i
-									className="bi bi-gear me-2"
-									aria-hidden="true"
-								/>
-								Configuración
-							</button>
-							{showConfig && (
+								<button
+									className="btn btn-link nav-link dropdown-toggle text-white d-flex align-items-center"
+									data-bs-toggle="dropdown"
+									aria-expanded={showConfig}
+									onClick={() => !isLargeScreen && setShowConfig((s) => !s)}
+								>
+									<i
+										className="bi bi-gear me-2"
+										aria-hidden="true"
+									/>
+									Configuración
+								</button>
 								<ul
-									className="dropdown-menu show text-center"
+									className={`dropdown-menu ${
+										showConfig ? "show" : ""
+									} text-center`}
 									style={{
 										background: COLOR_LIGHT,
 										border: "none",
@@ -267,29 +291,31 @@ const NavbarAdmin = () => {
 										</button>
 									</li>
 								</ul>
-							)}
-						</li>
-					</ul>
+							</li>
+						</ul>
 
-					{/* Menú del usuario (alineado derecha) */}
-				</div>
-				<div className="dropdown ms-lg-3">
-					<button
-						className="btn btn-sm btn-light dropdown-toggle fw-semibold"
-						data-bs-toggle="dropdown"
-					>
-						Administrador
-					</button>
-					<ul className="dropdown-menu dropdown-menu-end">
-						<li>
-							<button
-								className="dropdown-item text-danger"
-								onClick={handleLogout}
-							>
-								Cerrar sesión
-							</button>
-						</li>
-					</ul>
+						{/* Menú del usuario (alineado derecha) */}
+						<div className="d-flex align-items-center ms-lg-3 mt-3 mt-lg-0">
+							<div className="dropdown">
+								<button
+									className="btn btn-sm btn-light dropdown-toggle fw-semibold"
+									data-bs-toggle="dropdown"
+								>
+									Administrador
+								</button>
+								<ul className="dropdown-menu dropdown-menu-end">
+									<li>
+										<button
+											className="dropdown-item text-danger"
+											onClick={handleLogout}
+										>
+											Cerrar sesión
+										</button>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</nav>

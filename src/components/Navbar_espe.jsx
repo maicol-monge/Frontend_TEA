@@ -1,296 +1,294 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/tea_logo.png";
 
-const COLOR_PRIMARY = "#457b9d";
+const COLOR_PRIMARY = "#1d3557";
 const COLOR_ACCENT = "#f3859e";
-const COLOR_DARK = "#1d3557";
-const GENERIC_AVATAR = "https://ui-avatars.com/api/?name=Usuario&background=cccccc&color=555555&size=64";
+const COLOR_LIGHT = "#f1faee";
 
 const Navbar = () => {
-    const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user"));
-    const fotoPerfil = user?.imagen ? user.imagen : GENERIC_AVATAR;
-    const nombreUsuario = user?.nombres + " " + user?.apellidos || "Usuario";
-    const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const fotoPerfil =
+    user?.imagen || "https://ui-avatars.com/api/?name=Usuario&background=cccccc&color=555555&size=64";
+  const nombreUsuario = `${user?.nombres ?? "Usuario"} ${user?.apellidos ?? ""}`.trim();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [showEval, setShowEval] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 992px)").matches : true
+  );
 
-    // ruta para estadísticas del especialista (usa id disponible en user)
-    const especialistaId = user?.id_especialista ?? user?.id_usuario ?? user?.id ?? null;
-    const statsPath = especialistaId ? `/estadisticas_especialista/${especialistaId}` : '/estadisticas_especialista';
+  // Detectar tamaño de pantalla
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 992px)");
+    const handler = (e) => setIsLargeScreen(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
-    const handleLogout = () => {
-        import("sweetalert2").then(Swal => {
-            Swal.default.fire({
-                title: "¿Cerrar sesión?",
-                text: "¿Estás seguro que deseas cerrar sesión?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: COLOR_ACCENT,
-                cancelButtonColor: COLOR_DARK,
-                confirmButtonText: "Sí, salir",
-                cancelButtonText: "Cancelar"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    localStorage.removeItem("user");
-                    navigate("/");
-                }
-            });
+  const especialistaId = user?.id_especialista ?? user?.id_usuario ?? user?.id;
+  const statsPath = especialistaId
+    ? `/estadisticas_especialista/${especialistaId}`
+    : "/estadisticas_especialista";
+
+  const navigateAndClose = (path) => {
+    navigate(path);
+    setMenuAbierto(false);
+    setShowEval(false);
+  };
+
+  const handleLogout = () => {
+    import("sweetalert2").then((Swal) => {
+      Swal.default
+        .fire({
+          title: "¿Cerrar sesión?",
+          text: "¿Estás seguro que deseas cerrar sesión?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: COLOR_ACCENT,
+          cancelButtonColor: COLOR_PRIMARY,
+          confirmButtonText: "Sí, salir",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            localStorage.removeItem("user");
+            navigate("/");
+          }
         });
-    };
+    });
+  };
 
-    return (
-        <nav
-            className="navbar navbar-expand-lg"
-            style={{
-                background: COLOR_PRIMARY,
-                borderBottom: `4px solid ${COLOR_ACCENT}`,
-                minHeight: 60,
-            }}
+  return (
+    <nav
+      className="navbar navbar-expand-lg shadow-sm"
+      style={{
+        background: COLOR_PRIMARY,
+        borderBottom: `4px solid ${COLOR_ACCENT}`,
+      }}
+    >
+      {/* Estilos inline para mantener la animación y hover */}
+      <style>{`
+        .navbar .nav-link.btn-link {
+          transition: background .15s ease, color .15s ease;
+          border-radius: 6px;
+          padding: 0.3rem 0.7rem;
+        }
+        .navbar .nav-link.btn-link:hover,
+        .navbar .nav-link.btn-link:focus {
+          background: ${COLOR_ACCENT};
+          color: ${COLOR_PRIMARY} !important;
+          text-decoration: none;
+        }
+        .navbar .dropdown-menu .dropdown-item:hover {
+          background: ${COLOR_ACCENT};
+          color: ${COLOR_PRIMARY};
+        }
+        .navbar img[alt="Logo"],
+        .navbar img[alt="Perfil"] {
+          transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .navbar img[alt="Logo"]:hover {
+          transform: scale(1.03);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .navbar img[alt="Perfil"]:hover {
+          transform: scale(1.03);
+          box-shadow: 0 0 0 4px rgba(243,133,158,0.12);
+        }
+        /* Asegurar que el menú se apile bien en móvil */
+        @media (max-width: 991px) {
+          .navbar-collapse {
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .navbar-nav {
+            flex-direction: column !important;
+            align-items: center !important;
+            margin-bottom: 1rem;
+          }
+          .navbar .dropdown-menu {
+            position: static !important;
+            float: none !important;
+            box-shadow: none !important;
+            margin-top: 0.5rem;
+          }
+          .navbar img[alt="Perfil"] {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .navbar .btn-light {
+            width: 100%;
+            margin-top: 0.4rem;
+          }
+        }
+      `}</style>
+
+      <div className="container-fluid px-4">
+        {/* Logo + título */}
+        <div
+          className="d-flex align-items-center"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/home_espe")}
         >
-            <div className="container-fluid">
-                <div className="d-flex align-items-center">
-                    <span
-                        className="navbar-brand d-flex align-items-center"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => navigate("/home_espe")}
-                    >
-                        <img
-                            src={Logo}
-                            alt="Logo"
-                            width="40"
-                            height="40"
-                            className="d-inline-block align-top me-2"
-                            style={{
-                                background: "#fff",
-                                borderRadius: "50%",
-                                border: `2px solid ${COLOR_ACCENT}`,
-                                objectFit: "contain"
-                            }}
-                        />
-                        <span style={{ color: "#fff", fontWeight: "bold", fontSize: 20, marginRight: 12 }}>
-                            TEA Diagnóstico
-                        </span>
-                    </span>
-                    {/* Botones al lado del logo en escritorio */}
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate("/home_espe")}
-                    >
-                        Inicio
-                    </button>
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate("/registrar")}
-                    >
-                        Registrar Usuario
-                    </button>
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate("/pacientes")}
-                    >
-                        Evaluación ADI-R
-                    </button>
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate("/pacientesados")}
-                    >
-                        Evaluación ADOS-2
-                    </button>
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate("/reportes")}
-                    >
-                        Reportes
-                    </button>
+          <img
+            src={Logo}
+            alt="Logo"
+            width="42"
+            height="42"
+            className="me-2"
+            style={{
+              background: "#fff",
+              borderRadius: "50%",
+              border: `2px solid ${COLOR_ACCENT}`,
+              objectFit: "contain",
+            }}
+          />
+          <h5 className="m-0 fw-bold text-white">TEA Diagnóstico</h5>
+        </div>
 
-                    {/* Nuevo botón: Estadísticas especialista */}
-                    <button
-                        className="btn btn-sm ms-2 d-none d-lg-inline"
-                        style={{
-                            background: COLOR_DARK,
-                            color: "#fff",
-                            fontWeight: "bold"
-                        }}
-                        onClick={() => navigate(statsPath)}
-                    >
-                        Estadísticas
-                    </button>
-                </div>
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                    aria-label="Toggle navigation"
-                    style={{ borderColor: "#fff" }}
-                    onClick={() => setShowMenu(!showMenu)}
-                >
-                    <span className="navbar-toggler-icon" style={{ filter: "invert(1)" }}></span>
-                </button>
-                <div className={`collapse navbar-collapse justify-content-end ${showMenu ? "show" : ""}`}>
-                    <ul className={`navbar-nav align-items-lg-center ms-auto ${showMenu ? "flex-column text-center" : ""}`}>
-                        {/* Botones solo visibles en menú sandwich */}
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate("/home_espe");
-                                }}
-                            >
-                                Inicio
-                            </button>
-                        </li>
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate("/registrar");
-                                }}
-                            >
-                                Registrar Usuario
-                            </button>
-                        </li>
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate("/pacientes");
-                                }}
-                            >
-                                Evaluación ADI-R
-                            </button>
-                        </li>
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate("/pacientesados");
-                                }}
-                            >
-                                Evaluación ADOS-2
-                            </button>
-                        </li>
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate("/reportes");
-                                }}
-                            >
-                                Reportes
-                            </button>
-                        </li>
+        {/* Botón hamburguesa */}
+        <button
+          className="navbar-toggler text-white"
+          type="button"
+          aria-controls="navbarNav"
+          aria-expanded={menuAbierto}
+          aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+          onClick={() => setMenuAbierto((s) => !s)}
+        >
+          ☰
+        </button>
 
-                        {/* Botón Estadísticas en menú mobile */}
-                        <li className="nav-item d-lg-none mb-2">
-                            <button
-                                className="btn btn-sm w-100"
-                                style={{
-                                    background: COLOR_DARK,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={() => {
-                                    setShowMenu(false);
-                                    navigate(statsPath);
-                                }}
-                            >
-                                Estadísticas
-                            </button>
-                        </li>
-                        <li className="nav-item d-flex flex-column flex-lg-row align-items-center ms-lg-3 mt-2 mt-lg-0">
-                            <p className="text-light mb-2 mb-lg-0 me-lg-2" style={{ fontSize: 16 }}>
-                                ¡Bienvenido/a,{" "}
-                                <span style={{ color: "#fff", fontWeight: "bold" }}>
-                                    {nombreUsuario}
-                                </span>
-                                !
-                            </p>
-                            <img
-                                src={fotoPerfil}
-                                alt="Perfil"
-                                width="50"
-                                height="50"
-                                style={{
-                                    borderRadius: "50%",
-                                    objectFit: "cover",
-                                    border: `2px solid ${COLOR_ACCENT}`,
-                                    marginRight: 10,
-                                    marginLeft: 5,
-                                    cursor: "pointer" // Para indicar que es clickeable
-                                }}
-                                onClick={() => navigate("/perfil-especialista")}
-                            />
-                            <button
-                                className="btn mt-2 mt-lg-0"
-                                style={{
-                                    background: COLOR_ACCENT,
-                                    color: "#fff",
-                                    fontWeight: "bold"
-                                }}
-                                onClick={handleLogout}
-                            >
-                                Cerrar sesión
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+        {/* Menú principal */}
+        <div
+          id="navbarNav"
+          className={`collapse navbar-collapse ${menuAbierto ? "show" : ""} mt-2 mt-lg-0`}
+        >
+          {/* Wrapper to provide responsive layout without breaking Bootstrap's collapse */}
+          <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between w-100">
+          {/* Enlaces centrados */}
+          <ul className="navbar-nav mx-auto mb-2 mb-lg-0 d-flex justify-content-center flex-wrap">
+            <li className="nav-item mx-2">
+              <button
+                className="btn btn-link nav-link text-white"
+                onClick={() => navigateAndClose("/home_espe")}
+              >
+                Inicio
+              </button>
+            </li>
+            <li className="nav-item mx-2">
+              <button
+                className="btn btn-link nav-link text-white"
+                onClick={() => navigateAndClose("/registrar")}
+              >
+                Registrar Usuario
+              </button>
+            </li>
+
+            {/* Dropdown Evaluaciones */}
+            <li
+              className="nav-item dropdown mx-2"
+              onMouseEnter={() => isLargeScreen && setShowEval(true)}
+              onMouseLeave={() => isLargeScreen && setShowEval(false)}
+            >
+              <button
+                className="btn btn-link nav-link dropdown-toggle text-white"
+                onClick={() => {
+                  if (!isLargeScreen) setShowEval((s) => !s);
+                }}
+              >
+                Evaluaciones
+              </button>
+              <ul
+                className={`dropdown-menu ${showEval ? "show" : ""} text-center`}
+                style={{
+                  background: COLOR_LIGHT,
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigateAndClose("/pacientes")}
+                  >
+                    ADI-R
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigateAndClose("/pacientesados")}
+                  >
+                    ADOS-2
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li className="nav-item mx-2">
+              <button
+                className="btn btn-link nav-link text-white"
+                onClick={() => navigateAndClose("/reportes")}
+              >
+                Reportes
+              </button>
+            </li>
+
+            <li className="nav-item mx-2">
+              <button
+                className="btn btn-link nav-link text-white"
+                onClick={() => navigateAndClose(statsPath)}
+              >
+                Estadísticas
+              </button>
+            </li>
+          </ul>
+
+          {/* Usuario (a la derecha) */}
+          <div className="d-flex align-items-center mt-3 mt-lg-0">
+            <img
+              src={fotoPerfil}
+              alt="Perfil"
+              width="45"
+              height="45"
+              className="me-2"
+              style={{
+                borderRadius: "50%",
+                border: `2px solid ${COLOR_ACCENT}`,
+                cursor: "pointer",
+              }}
+              onClick={() => navigate("/perfil-especialista")}
+            />
+            <div className="dropdown">
+              <button
+                className="btn btn-sm btn-light dropdown-toggle fw-semibold"
+                data-bs-toggle="dropdown"
+              >
+                {nombreUsuario}
+              </button>
+              <ul className="dropdown-menu dropdown-menu-end">
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/perfil-especialista")}
+                  >
+                    Perfil
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item text-danger" onClick={handleLogout}>
+                    Cerrar sesión
+                  </button>
+                </li>
+              </ul>
             </div>
-        </nav>
-    );
+          </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
 };
 
 export default Navbar;

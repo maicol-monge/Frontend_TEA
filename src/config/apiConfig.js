@@ -10,7 +10,7 @@ export const SPRING_BASE = "https://tea-backend-vja0.onrender.com";
 //export const LARAVEL_BASE = 'https://apilaravel-production-9a74.up.railway.app';
 // Selecciona aquí la base que quieras usar (comentar la otra)
 export const BASE_URL = SPRING_BASE;
-// export const BASE_URL = LARAVEL_BASE;
+//export const BASE_URL = LARAVEL_BASE;
 
 export const apiUrl = (path) => `${BASE_URL}${path}`;
 

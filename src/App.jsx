@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login/LoginPage";
 import Home_Espe from "./Especialista/home_espe";
 import Home_Paciente from "./Paciente/home_paciente";
@@ -48,8 +48,8 @@ import ReportAdiR from "./Reportes/ReportAdiR";
 import ReportAdiR_paciente from "./Reportes/ReportAdiR_paciente";
 
 
-import EstadisticasAdmin from "../src/Admin/EstadisticasAdmin";
-import EstadisticasEspecialista from "../src/Especialista/EstadisticasEspecialista";
+import EstadisticasAdmin from "./Admin/EstadisticasAdmin";
+import EstadisticasEspecialista from "./Especialista/EstadisticasEspecialista";
 //Agregado ahorita
 import ListaUsuarios from "./Especialista/ListaUsuarios";
 
@@ -127,7 +127,7 @@ function App() {
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/reporte-adir" element={<ReportAdiR />} />
           <Route path="/estadisticas_especialista" element={<EstadisticasEspecialista />} />
-+          <Route path="/estadisticas_especialista/:id" element={<EstadisticasEspecialista />} />
+          <Route path="/estadisticas_especialista/:id" element={<EstadisticasEspecialista />} />
           <Route path="/especialista/estadisticas" element={<EstadisticasEspecialista />} />
         </Route>
         {/* Solo pacientes (privilegio 1) */}
@@ -175,8 +175,11 @@ function App() {
           <Route path="/admin/actividades" element={<CrudActividades />} />
           <Route path="/admin/tests-adir" element={<CrudTestsAdiR />} />
           <Route path="/admin/tests-ados" element={<CrudTestsAdos2 />} />
-           <Route path="/admin/estadisticas" element={<EstadisticasAdmin />} />
+          <Route path="/admin/estadisticas" element={<EstadisticasAdmin />} />
         </Route>
+
+        {/* Catch-all: evita Not Found en rutas desconocidas */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/tea_logo.png";
 
@@ -14,11 +14,28 @@ const Navbar = () => {
   const nombreUsuario = `${user?.nombres ?? "Usuario"} ${user?.apellidos ?? ""}`.trim();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [showEval, setShowEval] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 992px)").matches : true
+  );
+
+  // Detectar tamaño de pantalla
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 992px)");
+    const handler = (e) => setIsLargeScreen(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const especialistaId = user?.id_especialista ?? user?.id_usuario ?? user?.id;
   const statsPath = especialistaId
     ? `/estadisticas_especialista/${especialistaId}`
     : "/estadisticas_especialista";
+
+  const navigateAndClose = (path) => {
+    navigate(path);
+    setMenuAbierto(false);
+    setShowEval(false);
+  };
 
   const handleLogout = () => {
     import("sweetalert2").then((Swal) => {
@@ -50,56 +67,63 @@ const Navbar = () => {
         borderBottom: `4px solid ${COLOR_ACCENT}`,
       }}
     >
+      {/* Estilos inline para mantener la animación y hover */}
       <style>{`
-        /* Hover styles added: only visual hover effects, no structure/logic changes */
         .navbar .nav-link.btn-link {
-          transition: background .15s ease, color .15s ease, transform .12s ease, box-shadow .15s ease;
+          transition: background .15s ease, color .15s ease;
           border-radius: 6px;
-          padding: 0.25rem 0.6rem;
+          padding: 0.3rem 0.7rem;
         }
-
         .navbar .nav-link.btn-link:hover,
         .navbar .nav-link.btn-link:focus {
           background: ${COLOR_ACCENT};
           color: ${COLOR_PRIMARY} !important;
           text-decoration: none;
         }
-
-        .navbar .dropdown-menu .dropdown-item {
-          transition: background .12s ease, color .12s ease;
-          border-radius: 6px;
-        }
-
-        .navbar .dropdown-menu .dropdown-item:hover,
-        .navbar .dropdown-menu .dropdown-item:focus {
+        .navbar .dropdown-menu .dropdown-item:hover {
           background: ${COLOR_ACCENT};
           color: ${COLOR_PRIMARY};
         }
-
-        /* Logo hover */
-        .navbar img[alt="Logo"] {
+        .navbar img[alt="Logo"],
+        .navbar img[alt="Perfil"] {
           transition: transform .18s ease, box-shadow .18s ease;
         }
         .navbar img[alt="Logo"]:hover {
           transform: scale(1.03);
           box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         }
-
-        /* Perfil hover */
-        .navbar img[alt="Perfil"] {
-          transition: transform .18s ease, box-shadow .18s ease, border-color .12s ease;
-        }
         .navbar img[alt="Perfil"]:hover {
           transform: scale(1.03);
           box-shadow: 0 0 0 4px rgba(243,133,158,0.12);
-          border-color: ${COLOR_LIGHT};
         }
-
-        /* Small elevation for the user dropdown button on hover */
-        .navbar .btn-light:hover {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        /* Asegurar que el menú se apile bien en móvil */
+        @media (max-width: 991px) {
+          .navbar-collapse {
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .navbar-nav {
+            flex-direction: column !important;
+            align-items: center !important;
+            margin-bottom: 1rem;
+          }
+          .navbar .dropdown-menu {
+            position: static !important;
+            float: none !important;
+            box-shadow: none !important;
+            margin-top: 0.5rem;
+          }
+          .navbar img[alt="Perfil"] {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .navbar .btn-light {
+            width: 100%;
+            margin-top: 0.4rem;
+          }
         }
       `}</style>
+
       <div className="container-fluid px-4">
         {/* Logo + título */}
         <div
@@ -127,33 +151,35 @@ const Navbar = () => {
         <button
           className="navbar-toggler text-white"
           type="button"
-          onClick={() => setMenuAbierto(!menuAbierto)}
+          aria-controls="navbarNav"
+          aria-expanded={menuAbierto}
           aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+          onClick={() => setMenuAbierto((s) => !s)}
         >
           ☰
         </button>
 
-        {/* Contenido del menú */}
+        {/* Menú principal */}
         <div
-          className={`collapse navbar-collapse ${
-            menuAbierto ? "show" : ""
-          } mt-2 mt-lg-0 d-flex align-items-center justify-content-between`}
+          id="navbarNav"
+          className={`collapse navbar-collapse ${menuAbierto ? "show" : ""} mt-2 mt-lg-0`}
         >
-          {/* Menú centrado */}
+          {/* Wrapper to provide responsive layout without breaking Bootstrap's collapse */}
+          <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between w-100">
+          {/* Enlaces centrados */}
           <ul className="navbar-nav mx-auto mb-2 mb-lg-0 d-flex justify-content-center flex-wrap">
             <li className="nav-item mx-2">
               <button
                 className="btn btn-link nav-link text-white"
-                onClick={() => navigate("/home_espe")}
+                onClick={() => navigateAndClose("/home_espe")}
               >
                 Inicio
               </button>
             </li>
-
             <li className="nav-item mx-2">
               <button
                 className="btn btn-link nav-link text-white"
-                onClick={() => navigate("/registrar")}
+                onClick={() => navigateAndClose("/registrar")}
               >
                 Registrar Usuario
               </button>
@@ -162,48 +188,48 @@ const Navbar = () => {
             {/* Dropdown Evaluaciones */}
             <li
               className="nav-item dropdown mx-2"
-              onMouseEnter={() => setShowEval(true)}
-              onMouseLeave={() => setShowEval(false)}
+              onMouseEnter={() => isLargeScreen && setShowEval(true)}
+              onMouseLeave={() => isLargeScreen && setShowEval(false)}
             >
               <button
                 className="btn btn-link nav-link dropdown-toggle text-white"
-                data-bs-toggle="dropdown"
+                onClick={() => {
+                  if (!isLargeScreen) setShowEval((s) => !s);
+                }}
               >
                 Evaluaciones
               </button>
-              {showEval && (
-                <ul
-                  className="dropdown-menu show text-center"
-                  style={{
-                    background: COLOR_LIGHT,
-                    border: "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  }}
-                >
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      onClick={() => navigate("/pacientes")}
-                    >
-                      ADI-R
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      onClick={() => navigate("/pacientesados")}
-                    >
-                      ADOS-2
-                    </button>
-                  </li>
-                </ul>
-              )}
+              <ul
+                className={`dropdown-menu ${showEval ? "show" : ""} text-center`}
+                style={{
+                  background: COLOR_LIGHT,
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigateAndClose("/pacientes")}
+                  >
+                    ADI-R
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigateAndClose("/pacientesados")}
+                  >
+                    ADOS-2
+                  </button>
+                </li>
+              </ul>
             </li>
 
             <li className="nav-item mx-2">
               <button
                 className="btn btn-link nav-link text-white"
-                onClick={() => navigate("/reportes")}
+                onClick={() => navigateAndClose("/reportes")}
               >
                 Reportes
               </button>
@@ -212,7 +238,7 @@ const Navbar = () => {
             <li className="nav-item mx-2">
               <button
                 className="btn btn-link nav-link text-white"
-                onClick={() => navigate(statsPath)}
+                onClick={() => navigateAndClose(statsPath)}
               >
                 Estadísticas
               </button>
@@ -220,7 +246,7 @@ const Navbar = () => {
           </ul>
 
           {/* Usuario (a la derecha) */}
-          <div className="d-flex align-items-center ms-lg-3">
+          <div className="d-flex align-items-center mt-3 mt-lg-0">
             <img
               src={fotoPerfil}
               alt="Perfil"
@@ -257,6 +283,7 @@ const Navbar = () => {
                 </li>
               </ul>
             </div>
+          </div>
           </div>
         </div>
       </div>

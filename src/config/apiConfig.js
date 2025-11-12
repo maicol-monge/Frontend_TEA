@@ -6,10 +6,11 @@
 
 // Para usar Spring Boot (ejemplo local en puerto 8080), descomentar la línea correspondiente
 //export const SPRING_BASE = "http://localhost:8080";
+//export const SPRING_BASE = "https://tea-backend-vja0.onrender.com";
 export const LARAVEL_BASE = 'https://apilaravel-production-9a74.up.railway.app';
 // Selecciona aquí la base que quieras usar (comentar la otra)
-export const BASE_URL = LARAVEL_BASE;
-// export const BASE_URL = LARAVEL_BASE;
+//export const BASE_URL = SPRING_BASE;
+ export const BASE_URL = LARAVEL_BASE;
 
 export const apiUrl = (path) => `${BASE_URL}${path}`;
 

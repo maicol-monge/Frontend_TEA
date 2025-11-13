@@ -11,6 +11,7 @@ const CrudEspecialistas = () => {
   const [busqueda, setBusqueda] = useState("");
   const [form, setForm] = useState({ id_usuario: "", especialidad: "" });
   const [editId, setEditId] = useState(null);
+  const [usuarioName, setUsuarioName] = useState("");
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
 
   // filtros para la tabla
@@ -33,9 +34,7 @@ const CrudEspecialistas = () => {
       ]);
 
       // Filtrar solo los usuarios especialistas (privilegio = 0)
-      const especialistasUsuarios = userRes.data.filter(
-        (u) => u.privilegio === 0
-      );
+      const especialistasUsuarios = userRes.data.filter((u) => u.privilegio === 0);
 
       setEspecialistas(espRes.data);
       setUsuarios(especialistasUsuarios);
@@ -46,48 +45,45 @@ const CrudEspecialistas = () => {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Solo actualización: si no hay editId, nega la creación
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!editId) {
+      Swal.fire({
+        icon: "warning",
+        title: "Atención",
+        text: "La creación de especialistas se realiza al crear un usuario con privilegio 'Especialista'. Use el módulo Usuarios.",
+      });
+      return;
+    }
     try {
-      if (editId) {
-        await axios.put(apiUrl(`/api/admin/especialistas/${editId}`), form, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        Swal.fire({
-          icon: "success",
-          title: "Actualizado",
-          text: "Especialista actualizado correctamente",
-          timer: 1600,
-          showConfirmButton: false,
-        });
-      } else {
-        await axios.post(apiUrl("/api/admin/especialistas"), form, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        Swal.fire({
-          icon: "success",
-          title: "Creado",
-          text: "Especialista creado correctamente",
-          timer: 1600,
-          showConfirmButton: false,
-        });
-      }
+      await axios.put(apiUrl(`/api/admin/especialistas/${editId}`), form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      Swal.fire({
+        icon: "success",
+        title: "Actualizado",
+        text: "Especialista actualizado correctamente",
+        timer: 1600,
+        showConfirmButton: false,
+      });
       setForm({ id_usuario: "", especialidad: "" });
       setBusqueda("");
       setEditId(null);
+      setUsuarioName("");
       setShowModal(false);
       fetchData();
     } catch (err) {
-      console.error("Error al guardar especialista:", err);
+      console.error("Error al actualizar especialista:", err);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Error al guardar especialista",
+        text: "Error al actualizar especialista",
       });
     }
   };
@@ -99,18 +95,20 @@ const CrudEspecialistas = () => {
       especialidad: especialista.especialidad,
     });
 
-    const usuario = usuarios.find(
-      (u) => u.id_usuario === especialista.id_usuario
-    );
-    if (usuario)
-      setBusqueda(
-        `${usuario.nombres} ${usuario.apellidos} (${usuario.correo})`
-      );
+    const usuario = usuarios.find((u) => u.id_usuario === especialista.id_usuario);
+    if (usuario) {
+      setUsuarioName(`${usuario.nombres} ${usuario.apellidos} (${usuario.correo})`);
+      setBusqueda(`${usuario.nombres} ${usuario.apellidos} (${usuario.correo})`);
+    } else {
+      setUsuarioName(`Usuario ${especialista.id_usuario}`);
+      setBusqueda("");
+    }
+
     // abrir modal en modo edición
     setShowModal(true);
   };
 
-  // Buscar usuario por nombre o correo
+  // Buscar usuario por nombre o correo (solo para info; no se usa para crear)
   const usuariosFiltrados = usuarios.filter(
     (u) =>
       u.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -134,12 +132,8 @@ const CrudEspecialistas = () => {
     const nombre = getNombreUsuario(e.id_usuario).toLowerCase();
     const espec = (e.especialidad || "").toLowerCase();
 
-    const nameMatch = filterName
-      ? nombre.includes(filterName.toLowerCase())
-      : true;
-    const especMatch = filterEspecialidad
-      ? espec === filterEspecialidad.toLowerCase()
-      : true;
+    const nameMatch = filterName ? nombre.includes(filterName.toLowerCase()) : true;
+    const especMatch = filterEspecialidad ? espec === filterEspecialidad.toLowerCase() : true;
 
     return nameMatch && especMatch;
   });
@@ -153,20 +147,11 @@ const CrudEspecialistas = () => {
       <div className="container py-4 flex-grow-1">
         <h2 className="mb-4">Especialistas</h2>
 
-        {/* Botón para abrir modal de agregar */}
+        {/* Mensaje informativo: no permitir creación desde aquí */}
         <div className="d-flex justify-content-end mb-3">
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              // abrir modal en modo creación
-              setForm({ id_usuario: "", especialidad: "" });
-              setBusqueda("");
-              setEditId(null);
-              setShowModal(true);
-            }}
-          >
-            + Agregar especialista
-          </button>
+          <div className="alert alert-info mb-0 py-2" style={{ fontSize: 14 }}>
+            Los especialistas se crean desde el formulario de Usuarios (crear usuario con privilegio "Especialista"). Aquí solo puede editar la especialidad.
+          </div>
         </div>
 
         {/* ======= FILTROS ======= */}
@@ -219,7 +204,7 @@ const CrudEspecialistas = () => {
           </div>
         </div>
 
-        {/* ======= MODAL (Agregar / Editar) ======= */}
+        {/* ======= MODAL (Editar) ======= */}
         {showModal && (
           <div
             className="modal d-block"
@@ -233,67 +218,32 @@ const CrudEspecialistas = () => {
             >
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">
-                    {editId ? "Editar especialista" : "Agregar especialista"}
-                  </h5>
+                  <h5 className="modal-title">Editar especialista</h5>
                   <button
                     type="button"
                     className="btn-close"
                     aria-label="Close"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => {
+                      setShowModal(false);
+                      setEditId(null);
+                      setForm({ id_usuario: "", especialidad: "" });
+                      setUsuarioName("");
+                      setBusqueda("");
+                    }}
                   />
                 </div>
                 <div className="modal-body">
                   <form className="row g-3" onSubmit={handleSubmit}>
-                    <div className="col-12 position-relative">
-                      <label className="form-label small">
-                        Usuario especialista
-                      </label>
+                    <div className="col-12">
+                      <label className="form-label small">Usuario especialista</label>
                       <input
                         type="text"
                         className="form-control"
-                        placeholder="Buscar y seleccionar usuario..."
-                        value={busqueda}
-                        onChange={(e) => {
-                          setBusqueda(e.target.value);
-                          setMostrarOpciones(true);
-                        }}
-                        onFocus={() => setMostrarOpciones(true)}
-                        onBlur={() =>
-                          setTimeout(() => setMostrarOpciones(false), 200)
-                        }
-                        required
+                        value={usuarioName}
+                        readOnly
+                        disabled
                       />
-                      {mostrarOpciones && usuariosFiltrados.length > 0 && (
-                        <ul
-                          className="list-group position-absolute w-100 shadow-sm"
-                          style={{
-                            maxHeight: "220px",
-                            overflowY: "auto",
-                            zIndex: 1100,
-                          }}
-                        >
-                          {usuariosFiltrados.map((u) => (
-                            <li
-                              key={u.id_usuario}
-                              className="list-group-item list-group-item-action"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                setForm({ ...form, id_usuario: u.id_usuario });
-                                setBusqueda(
-                                  `${u.nombres} ${u.apellidos} (${u.correo})`
-                                );
-                                setMostrarOpciones(false);
-                              }}
-                            >
-                              <strong>
-                                {u.nombres} {u.apellidos}
-                              </strong>
-                              <div className="text-muted small">{u.correo}</div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                      <small className="text-muted">No es posible cambiar el usuario desde este módulo.</small>
                     </div>
 
                     <div className="col-12">
@@ -316,13 +266,14 @@ const CrudEspecialistas = () => {
                           setShowModal(false);
                           setEditId(null);
                           setForm({ id_usuario: "", especialidad: "" });
+                          setUsuarioName("");
                           setBusqueda("");
                         }}
                       >
                         Cancelar
                       </button>
                       <button className="btn btn-success" type="submit">
-                        {editId ? "Actualizar" : "Crear"}
+                        Actualizar
                       </button>
                     </div>
                   </form>
